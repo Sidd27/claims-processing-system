@@ -10,7 +10,7 @@ import type { DisputeResolution } from '../domain/disputes/types'
 
 export async function openDispute(lineItemId: string, memberReason: string) {
   const lineItem = await getLineItem(lineItemId)
-  if (!lineItem) throw new DomainError('LINE_ITEM_NOT_FOUND')
+  if (!lineItem) throw new DomainError('LINE_ITEM_NOT_FOUND', `Line item not found: ${lineItemId}`)
 
   const claim = await getClaim(lineItem.claimId)
   if (!claim) throw new DomainError('CLAIM_NOT_FOUND')
@@ -19,7 +19,7 @@ export async function openDispute(lineItemId: string, memberReason: string) {
 
   const existingDisputes = await getDisputesByLineItemId(lineItemId)
   if (existingDisputes.some(d => d.status === 'open')) {
-    throw new DomainError('DISPUTE_ALREADY_OPEN')
+    throw new DomainError('DISPUTE_ALREADY_OPEN', 'This line item already has an open dispute — resolve it before opening another')
   }
 
   const dispute = await createDispute(lineItemId, memberReason)
@@ -37,12 +37,12 @@ export async function resolveDispute(
     const anyTx = tx as unknown as typeof db
 
     const dispute = await getDispute(disputeId, anyTx)
-    if (!dispute) throw new DomainError('DISPUTE_NOT_FOUND')
+    if (!dispute) throw new DomainError('DISPUTE_NOT_FOUND', `Dispute not found: ${disputeId}`)
 
     assertDisputeNotAlreadyResolved(dispute.status)
 
     const lineItem = await getLineItem(dispute.lineItemId, anyTx)
-    if (!lineItem) throw new DomainError('LINE_ITEM_NOT_FOUND')
+    if (!lineItem) throw new DomainError('LINE_ITEM_NOT_FOUND', `Line item not found: ${dispute.lineItemId}`)
 
     const claim = await getClaim(lineItem.claimId, anyTx)
     if (!claim) throw new DomainError('CLAIM_NOT_FOUND')

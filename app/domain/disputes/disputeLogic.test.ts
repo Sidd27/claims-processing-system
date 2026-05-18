@@ -2,6 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { assertCanOpenDispute, assertDisputeNotAlreadyResolved } from './disputeLogic'
 import { DomainError } from '../errors'
 
+function catchCode(fn: () => void): string {
+  try { fn() } catch (e) { if (e instanceof DomainError) return e.code; throw e }
+  throw new Error('Expected DomainError to be thrown')
+}
+
 describe('assertCanOpenDispute', () => {
   it('allows dispute when claim is approved', () => {
     expect(() => assertCanOpenDispute('approved')).not.toThrow()
@@ -16,19 +21,19 @@ describe('assertCanOpenDispute', () => {
   })
 
   it('throws CLAIM_IS_PAID_TERMINAL when claim is paid', () => {
-    expect(() => assertCanOpenDispute('paid')).toThrow('CLAIM_IS_PAID_TERMINAL')
+    expect(catchCode(() => assertCanOpenDispute('paid'))).toBe('CLAIM_IS_PAID_TERMINAL')
   })
 
   it('throws CLAIM_NOT_DISPUTABLE when claim is submitted', () => {
-    expect(() => assertCanOpenDispute('submitted')).toThrow('CLAIM_NOT_DISPUTABLE')
+    expect(catchCode(() => assertCanOpenDispute('submitted'))).toBe('CLAIM_NOT_DISPUTABLE')
   })
 
   it('throws CLAIM_NOT_DISPUTABLE when claim is under_review', () => {
-    expect(() => assertCanOpenDispute('under_review')).toThrow('CLAIM_NOT_DISPUTABLE')
+    expect(catchCode(() => assertCanOpenDispute('under_review'))).toBe('CLAIM_NOT_DISPUTABLE')
   })
 
   it('throws CLAIM_NOT_DISPUTABLE when claim is already disputed — resolve current dispute first', () => {
-    expect(() => assertCanOpenDispute('disputed')).toThrow('CLAIM_NOT_DISPUTABLE')
+    expect(catchCode(() => assertCanOpenDispute('disputed'))).toBe('CLAIM_NOT_DISPUTABLE')
   })
 })
 
@@ -38,6 +43,6 @@ describe('assertDisputeNotAlreadyResolved', () => {
   })
 
   it('throws DISPUTE_ALREADY_RESOLVED when dispute is already resolved', () => {
-    expect(() => assertDisputeNotAlreadyResolved('resolved')).toThrow('DISPUTE_ALREADY_RESOLVED')
+    expect(catchCode(() => assertDisputeNotAlreadyResolved('resolved'))).toBe('DISPUTE_ALREADY_RESOLVED')
   })
 })

@@ -8,6 +8,11 @@ import {
 } from './stateMachine'
 import { DomainError } from '../errors'
 
+function catchCode(fn: () => void): string {
+  try { fn() } catch (e) { if (e instanceof DomainError) return e.code; throw e }
+  throw new Error('Expected DomainError to be thrown')
+}
+
 describe('deriveClaimStatus', () => {
   it('derives approved when all line items are covered', () => {
     expect(deriveClaimStatus(['covered', 'covered'])).toBe('approved')
@@ -38,15 +43,15 @@ describe('deriveClaimStatus', () => {
   })
 
   it('throws CLAIM_HAS_NO_LINE_ITEMS when statuses array is empty', () => {
-    expect(() => deriveClaimStatus([])).toThrow('CLAIM_HAS_NO_LINE_ITEMS')
+    expect(catchCode(() => deriveClaimStatus([]))).toBe('CLAIM_HAS_NO_LINE_ITEMS')
   })
 
   it('throws LINE_ITEMS_NOT_YET_ADJUDICATED when any line item is still pending', () => {
-    expect(() => deriveClaimStatus(['pending', 'pending'])).toThrow('LINE_ITEMS_NOT_YET_ADJUDICATED')
+    expect(catchCode(() => deriveClaimStatus(['pending', 'pending']))).toBe('LINE_ITEMS_NOT_YET_ADJUDICATED')
   })
 
   it('throws LINE_ITEMS_NOT_YET_ADJUDICATED when pending is mixed with adjudicated statuses', () => {
-    expect(() => deriveClaimStatus(['covered', 'pending'])).toThrow('LINE_ITEMS_NOT_YET_ADJUDICATED')
+    expect(catchCode(() => deriveClaimStatus(['covered', 'pending']))).toBe('LINE_ITEMS_NOT_YET_ADJUDICATED')
   })
 })
 
@@ -90,7 +95,7 @@ describe('assertCanFlagForReview', () => {
   })
 
   it('throws CLAIM_IS_PAID_TERMINAL when claim is paid', () => {
-    expect(() => assertCanFlagForReview('paid')).toThrow('CLAIM_IS_PAID_TERMINAL')
+    expect(catchCode(() => assertCanFlagForReview('paid'))).toBe('CLAIM_IS_PAID_TERMINAL')
   })
 })
 

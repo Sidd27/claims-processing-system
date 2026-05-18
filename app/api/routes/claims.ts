@@ -4,7 +4,7 @@ import {
   getClaimDetail,
   getAllClaims,
   markClaimPaid,
-  triggerManualReview
+  reAdjudicateClaim
 } from '../../services/claimService'
 import type { SubmitClaimInput } from '../../services/claimService'
 import type { ServiceType } from '../../domain/policies/types'
@@ -26,7 +26,7 @@ const claimsRoutes: FastifyPluginAsync = async (fastify) => {
   })
 
   fastify.post<{ Params: { id: string } }>('/claims/:id/adjudicate', async (request, reply) => {
-    const claim = await triggerManualReview(request.params.id)
+    const claim = await reAdjudicateClaim(request.params.id)
     return reply.send(claim)
   })
 

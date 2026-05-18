@@ -4,3 +4,4 @@ dist/
 app/ui/node_modules/
 app/ui/dist/
 *.js.map
+coverage/

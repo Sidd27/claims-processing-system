@@ -87,7 +87,7 @@ export async function markClaimPaid(claimId: string) {
   return getClaim(claimId)
 }
 
-export async function triggerManualReview(claimId: string) {
+export async function reAdjudicateClaim(claimId: string) {
   const claim = await getClaim(claimId)
   if (!claim) throw new DomainError('CLAIM_NOT_FOUND')
 

@@ -5,9 +5,9 @@ export type ReductionReason =
   | 'ANNUAL_LIMIT_PARTIAL'
   | 'ANNUAL_LIMIT_EXHAUSTED'
 
-export type ReviewTrigger =
-  | 'AMOUNT_THRESHOLD_EXCEEDED'
-  | 'MANUAL_FLAG'
+export type ReviewTrigger = 'AMOUNT_THRESHOLD_EXCEEDED'
+
+export type AdjudicationTrigger = 'initial_submission' | 'dispute_overturn' | 'manual_review'
 
 export interface ExplanationStep {
   rule: string

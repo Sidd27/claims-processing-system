@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '../client'
 import { adjudicationResults } from '../schema'
-import type { ReductionReason, ExplanationStep } from '../../domain/adjudication/types'
+import type { ReductionReason, ExplanationStep, AdjudicationTrigger } from '../../domain/adjudication/types'
 
 type DbClient = typeof db
 
@@ -11,7 +11,7 @@ export interface CreateAdjudicationResultInput {
   deductibleAppliedCents: number
   reductionReasons: ReductionReason[]
   explanationSteps: ExplanationStep[]
-  trigger: string
+  trigger: AdjudicationTrigger
 }
 
 export async function createAdjudicationResult(input: CreateAdjudicationResultInput, dbClient: DbClient = db) {
@@ -34,10 +34,3 @@ export async function getActiveResult(lineItemId: string, dbClient: DbClient = d
   return result.find(r => r.isActive) ?? null
 }
 
-export async function getResultHistory(lineItemId: string, dbClient: DbClient = db) {
-  return dbClient
-    .select()
-    .from(adjudicationResults)
-    .where(eq(adjudicationResults.lineItemId, lineItemId))
-    .orderBy(adjudicationResults.adjudicatedAt)
-}

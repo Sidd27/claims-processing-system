@@ -21,21 +21,23 @@ async function seed() {
   // ── Members ───────────────────────────────────────────────────────────────
 
   console.log('Creating members...')
-  const [alice, bob, carol, dave] = await db.insert(members).values([
-    { externalMemberId: 'M-ALICE-001', name: 'Alice Chen',   dateOfBirth: '1985-03-12' },
-    { externalMemberId: 'M-BOB-002',   name: 'Bob Martinez', dateOfBirth: '1978-07-24' },
-    { externalMemberId: 'M-CAROL-003', name: 'Carol White',  dateOfBirth: '1992-11-05' },
-    { externalMemberId: 'M-DAVE-004',  name: 'Dave Patel',   dateOfBirth: '1969-01-30' },
+  const [alice, bob, carol, dave, emma] = await db.insert(members).values([
+    { externalMemberId: 'M-ALICE-001', name: 'Alice Chen',    dateOfBirth: '1985-03-12' },
+    { externalMemberId: 'M-BOB-002',   name: 'Bob Martinez',  dateOfBirth: '1978-07-24' },
+    { externalMemberId: 'M-CAROL-003', name: 'Carol White',   dateOfBirth: '1992-11-05' },
+    { externalMemberId: 'M-DAVE-004',  name: 'Dave Patel',    dateOfBirth: '1969-01-30' },
+    { externalMemberId: 'M-EMMA-005',  name: 'Emma Rodriguez',dateOfBirth: '2001-06-18' },
   ]).returning()
 
   // ── Policies ──────────────────────────────────────────────────────────────
 
   console.log('Creating policies...')
-  const [alicePolicy, bobPolicy, carolPolicy, davePolicy] = await db.insert(policies).values([
-    { memberId: alice.id, planName: 'Premier PPO',    effectiveDate: '2026-01-01' },
-    { memberId: bob.id,   planName: 'Standard HMO',   effectiveDate: '2026-01-01' },
-    { memberId: carol.id, planName: 'Behavioral Plus', effectiveDate: '2026-01-01' },
-    { memberId: dave.id,  planName: 'Dental Select',   effectiveDate: '2026-01-01' },
+  const [alicePolicy, bobPolicy, carolPolicy, davePolicy, emmaPolicy] = await db.insert(policies).values([
+    { memberId: alice.id, planName: 'Premier PPO',     effectiveDate: '2026-01-01' },
+    { memberId: bob.id,   planName: 'Standard HMO',    effectiveDate: '2026-01-01' },
+    { memberId: carol.id, planName: 'Behavioral Plus',  effectiveDate: '2026-01-01' },
+    { memberId: dave.id,  planName: 'Dental Select',    effectiveDate: '2026-01-01' },
+    { memberId: emma.id,  planName: 'Basic Vision Plan', effectiveDate: '2026-01-01' },
   ]).returning()
 
   // ── Coverage Rules ────────────────────────────────────────────────────────
@@ -57,6 +59,9 @@ async function seed() {
     { policyId: davePolicy.id,  serviceType: 'DENTAL',        ruleType: 'PER_CLAIM_CAP', config: { type: 'PER_CLAIM_CAP', capCents: 30000 } },
     { policyId: davePolicy.id,  serviceType: 'DENTAL',        ruleType: 'COINSURANCE',   config: { type: 'COINSURANCE', coveragePercent: 0.8 } },
     { policyId: davePolicy.id,  serviceType: 'VISION',        ruleType: 'NOT_COVERED',   config: { type: 'NOT_COVERED' } },
+
+    // Emma — VISION: not covered (demonstrates fully denied claim)
+    { policyId: emmaPolicy.id,  serviceType: 'VISION',        ruleType: 'NOT_COVERED',   config: { type: 'NOT_COVERED' } },
   ])
 
   // ── Carol: prior claim to consume $4,500 of the $5,000 annual limit ──────
@@ -171,6 +176,26 @@ async function seed() {
     'Reviewed with clinical team — crown is medically necessary. Approving full billed amount.'
   )
   console.log(`  Dispute ${dispute.id} resolved: overturned — Dave claim fully approved`)
+
+  // ── Emma: fully denied — VISION not covered ──────────────────────────────
+
+  console.log('Creating Emma claim (denied — NOT_COVERED)...')
+  const { claim: emmaClaim } = await submitClaim({
+    memberId: emma.id,
+    providerName: 'Vision Plus Optometry',
+    providerNpi: '9988776655',
+    diagnosisCode: 'H52.1',
+    lineItems: [
+      {
+        serviceType: 'VISION',
+        cptCode: '92004',
+        description: 'Comprehensive eye exam',
+        serviceDate: '2026-05-19',
+        billedAmountCents: 15000, // $150 billed; VISION not covered → $0 approved
+      }
+    ]
+  })
+  console.log(`  Emma claim ${emmaClaim.id} → ${emmaClaim.status}`)
 
   console.log('\nSeed complete.')
   process.exit(0)

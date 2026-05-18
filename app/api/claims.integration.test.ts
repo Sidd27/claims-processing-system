@@ -228,7 +228,140 @@ describe('prior usage reflects only active adjudication results', () => {
   })
 })
 
-// ── 4. Empty line items rejected ──────────────────────────────────────────────
+// ── 4. Multi-line-item claim with mixed outcomes ──────────────────────────────
+
+describe('multi-line-item claim with mixed adjudication outcomes', () => {
+  it('derives partially_approved when one line item is covered and another is denied', async () => {
+    const { memberId } = await createMember([
+      { serviceType: 'MEDICAL', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.8 } },
+      { serviceType: 'VISION',  ruleType: 'NOT_COVERED', config: { type: 'NOT_COVERED' } }
+    ] as any)
+
+    const r = await submitClaim(memberId, [
+      { serviceType: 'MEDICAL', cptCode: '99213', description: 'Office visit',
+        serviceDate: '2026-04-01', billedAmountCents: 20000 },
+      { serviceType: 'VISION',  cptCode: '92004', description: 'Eye exam',
+        serviceDate: '2026-04-01', billedAmountCents: 10000 }
+    ])
+    expect(r.statusCode).toBe(201)
+    const { claim, lineItems } = JSON.parse(r.body)
+
+    expect(claim.status).toBe('partially_approved')
+
+    const detail = await app.inject({ method: 'GET', url: `/api/v1/claims/${claim.id}` })
+    const { lineItems: detailItems } = JSON.parse(detail.body)
+    const medical = detailItems.find((li: any) => li.serviceType === 'MEDICAL')
+    const vision  = detailItems.find((li: any) => li.serviceType === 'VISION')
+    expect(medical.status).toBe('covered')
+    expect(medical.adjudicationResult.approvedAmountCents).toBe(16000) // 80%
+    expect(vision.status).toBe('denied')
+    expect(vision.adjudicationResult.approvedAmountCents).toBe(0)
+  })
+})
+
+// ── 5. Deductible carries across claims ───────────────────────────────────────
+
+describe('deductible paid carries across claims via deductibleAppliedCents', () => {
+  it('second claim sees reduced deductible remaining after first claim pays into it', async () => {
+    const { memberId } = await createMember([
+      { serviceType: 'MEDICAL', ruleType: 'DEDUCTIBLE',  config: { type: 'DEDUCTIBLE', deductibleCents: 50000 } },
+      { serviceType: 'MEDICAL', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.8 } }
+    ] as any)
+
+    // Claim 1: $300 billed — fully absorbed by $500 deductible → $0 approved
+    const r1 = await submitClaim(memberId, [{
+      serviceType: 'MEDICAL', cptCode: '99213', description: 'Visit',
+      serviceDate: '2026-01-10', billedAmountCents: 30000
+    }])
+    const c1 = JSON.parse(r1.body)
+    const d1 = await app.inject({ method: 'GET', url: `/api/v1/claims/${c1.claim.id}` })
+    const detail1 = JSON.parse(d1.body)
+    expect(detail1.lineItems[0].adjudicationResult.approvedAmountCents).toBe(0)
+    expect(detail1.lineItems[0].adjudicationResult.deductibleAppliedCents).toBe(30000)
+
+    // Claim 2: $400 billed — only $200 of deductible remains; $200 approved after 80% coinsurance
+    const r2 = await submitClaim(memberId, [{
+      serviceType: 'MEDICAL', cptCode: '99213', description: 'Follow-up',
+      serviceDate: '2026-02-10', billedAmountCents: 40000
+    }])
+    const c2 = JSON.parse(r2.body)
+    const d2 = await app.inject({ method: 'GET', url: `/api/v1/claims/${c2.claim.id}` })
+    const detail2 = JSON.parse(d2.body)
+    // $400 - $200 remaining deductible = $200, then 80% = $160
+    expect(detail2.lineItems[0].adjudicationResult.approvedAmountCents).toBe(16000)
+    expect(detail2.lineItems[0].adjudicationResult.deductibleAppliedCents).toBe(20000)
+  })
+})
+
+// ── 6. Pay guard ──────────────────────────────────────────────────────────────
+
+describe('pay claim guard', () => {
+  it('returns 422 CLAIM_NOT_PAYABLE when paying a denied claim', async () => {
+    const { memberId } = await createMember([
+      { serviceType: 'VISION', ruleType: 'NOT_COVERED', config: { type: 'NOT_COVERED' } }
+    ] as any)
+
+    const r = await submitClaim(memberId, [{
+      serviceType: 'VISION', cptCode: '92004', description: 'Eye exam',
+      serviceDate: '2026-04-01', billedAmountCents: 10000
+    }])
+    const { claim } = JSON.parse(r.body)
+    expect(claim.status).toBe('denied')
+
+    const payResponse = await app.inject({ method: 'POST', url: `/api/v1/claims/${claim.id}/pay` })
+    expect(payResponse.statusCode).toBe(422)
+    expect(JSON.parse(payResponse.body).error).toBe('CLAIM_NOT_PAYABLE')
+  })
+
+  it('returns 422 CLAIM_NOT_PAYABLE when paying an under_review claim', async () => {
+    const { memberId } = await createMember([
+      { serviceType: 'MEDICAL', ruleType: 'REVIEW_THRESHOLD', config: { type: 'REVIEW_THRESHOLD', thresholdCents: 10000 } }
+    ] as any)
+
+    const r = await submitClaim(memberId, [{
+      serviceType: 'MEDICAL', cptCode: '99213', description: 'Expensive visit',
+      serviceDate: '2026-04-01', billedAmountCents: 50000
+    }])
+    const { claim } = JSON.parse(r.body)
+    expect(claim.status).toBe('under_review')
+
+    const payResponse = await app.inject({ method: 'POST', url: `/api/v1/claims/${claim.id}/pay` })
+    expect(payResponse.statusCode).toBe(422)
+    expect(JSON.parse(payResponse.body).error).toBe('CLAIM_NOT_PAYABLE')
+  })
+})
+
+// ── 7. Disputing a covered line item ─────────────────────────────────────────
+
+describe('disputing a covered line item', () => {
+  it('allows opening a dispute when the line item is covered and claim is approved', async () => {
+    const { memberId } = await createMember([
+      { serviceType: 'MEDICAL', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.8 } }
+    ] as any)
+
+    const r = await submitClaim(memberId, [{
+      serviceType: 'MEDICAL', cptCode: '99213', description: 'Office visit',
+      serviceDate: '2026-04-01', billedAmountCents: 20000
+    }])
+    const { claim, lineItems } = JSON.parse(r.body)
+    expect(claim.status).toBe('approved')
+    expect(lineItems[0].status).toBe('covered')
+
+    const dr = await app.inject({
+      method: 'POST',
+      url: `/api/v1/claims/${claim.id}/line-items/${lineItems[0].id}/dispute`,
+      payload: { memberReason: 'I was charged incorrectly for this visit.' }
+    })
+    expect(dr.statusCode).toBe(201)
+    const dispute = JSON.parse(dr.body)
+    expect(dispute.status).toBe('open')
+
+    const detail = await app.inject({ method: 'GET', url: `/api/v1/claims/${claim.id}` })
+    expect(JSON.parse(detail.body).claim.status).toBe('disputed')
+  })
+})
+
+// ── 8. Empty line items rejected ──────────────────────────────────────────────
 
 describe('empty line items rejected', () => {
   it('returns 422 CLAIM_HAS_NO_LINE_ITEMS when lineItems array is empty', async () => {

@@ -15,8 +15,8 @@ export const DISPUTABLE_STATES: ClaimStatus[] = ['approved', 'partially_approved
 export const PAYABLE_STATES: ClaimStatus[]    = ['approved', 'partially_approved']
 
 export function deriveClaimStatus(statuses: LineItemStatus[]): ClaimStatus {
-  if (statuses.length === 0) throw new DomainError('CLAIM_HAS_NO_LINE_ITEMS')
-  if (statuses.some(s => s === 'pending')) throw new DomainError('LINE_ITEMS_NOT_YET_ADJUDICATED')
+  if (statuses.length === 0) throw new DomainError('CLAIM_HAS_NO_LINE_ITEMS', 'A claim must have at least one line item')
+  if (statuses.some(s => s === 'pending')) throw new DomainError('LINE_ITEMS_NOT_YET_ADJUDICATED', 'All line items must be adjudicated before deriving claim status')
   if (statuses.some(s => s === 'needs_review'))  return 'under_review'
   if (statuses.every(s => s === 'denied'))        return 'denied'
   if (statuses.every(s => s === 'covered'))       return 'approved'
@@ -31,5 +31,5 @@ export function assertValidTransition(from: ClaimStatus, to: ClaimStatus): void 
 }
 
 export function assertCanFlagForReview(claimStatus: ClaimStatus): void {
-  if (claimStatus === 'paid') throw new DomainError('CLAIM_IS_PAID_TERMINAL')
+  if (claimStatus === 'paid') throw new DomainError('CLAIM_IS_PAID_TERMINAL', 'Claim has been paid and cannot be modified')
 }
