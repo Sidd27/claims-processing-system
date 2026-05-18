@@ -20,6 +20,7 @@ export type AdjudicationOutput =
   | {
       outcome: 'complete'
       approvedAmountCents: number
+      deductibleAppliedCents: number
       lineItemStatus: 'covered' | 'partially_covered' | 'denied'
       reductionReasons: ReductionReason[]
       explanationSteps: ExplanationStep[]

@@ -21,6 +21,7 @@ export function adjudicate(
     return {
       outcome: 'complete',
       approvedAmountCents: 0,
+      deductibleAppliedCents: 0,
       lineItemStatus: 'denied',
       reductionReasons: ['NOT_COVERED'],
       explanationSteps: [{
@@ -51,6 +52,7 @@ export function adjudicate(
 
   // ── Math begins ───────────────────────────────────────────────────────────
   let current = lineItem.billedAmountCents
+  let deductibleApplied = 0
   const reasons: ReductionReason[] = []
   const steps: ExplanationStep[] = []
 
@@ -60,6 +62,7 @@ export function adjudicate(
     const remaining = deductibleRule.config.deductibleCents - priorUsage.deductiblePaidCents
     if (remaining > 0) {
       const applied = Math.min(remaining, current)
+      deductibleApplied = applied
       const before = current
       current -= applied
       reasons.push('DEDUCTIBLE_APPLIED')
@@ -136,6 +139,7 @@ export function adjudicate(
   return {
     outcome: 'complete',
     approvedAmountCents: current,
+    deductibleAppliedCents: deductibleApplied,
     lineItemStatus,
     reductionReasons: reasons,
     explanationSteps: steps
