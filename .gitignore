@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.env
+app/ui/node_modules/
+app/ui/dist/
+*.js.map

@@ -1,13 +1,33 @@
 {
   "name": "claims-processing-system",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Insurance claims processing system",
+  "main": "dist/api/index.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev:api": "tsx watch app/api/index.ts",
+    "dev:ui": "cd app/ui && npm run dev",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:ui\"",
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx app/db/seed.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "drizzle-orm": "^0.30.10",
+    "fastify": "^4.27.0",
+    "pg": "^8.11.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "@types/pg": "^8.11.5",
+    "concurrently": "^8.2.2",
+    "drizzle-kit": "^0.21.4",
+    "tsx": "^4.7.3",
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.0"
+  }
 }
