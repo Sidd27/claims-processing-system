@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, desc } from 'drizzle-orm'
 import { db } from '../client'
 import { claims } from '../schema'
 import type { ClaimStatus } from '../../domain/claims/types'
@@ -19,7 +19,7 @@ export async function getClaim(claimId: string, dbClient: DbClient = db) {
 }
 
 export async function listClaims(dbClient: DbClient = db) {
-  return dbClient.select().from(claims).orderBy(claims.submittedAt)
+  return dbClient.select().from(claims).orderBy(desc(claims.submittedAt))
 }
 
 export async function createClaim(input: CreateClaimInput, dbClient: DbClient = db) {

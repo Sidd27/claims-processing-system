@@ -1,9 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify'
-import { getMember } from '../../db/repositories/members'
+import { listMembers, getMember } from '../../db/repositories/members'
 import { getActivePolicy, getCoverageRules } from '../../db/repositories/policies'
 import { DomainError } from '../../domain/errors'
 
 const membersRoutes: FastifyPluginAsync = async (fastify) => {
+  fastify.get('/members', async (_request, reply) => {
+    return reply.send(await listMembers())
+  })
+
   fastify.get<{ Params: { id: string } }>('/members/:id', async (request, reply) => {
     const member = await getMember(request.params.id)
     if (!member) throw new DomainError('MEMBER_NOT_FOUND')
