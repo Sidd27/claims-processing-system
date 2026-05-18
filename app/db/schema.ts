@@ -57,14 +57,15 @@ export const claimLineItems = pgTable('claim_line_items', {
 })
 
 export const adjudicationResults = pgTable('adjudication_results', {
-  id:                 uuid('id').primaryKey().defaultRandom(),
-  lineItemId:         uuid('line_item_id').notNull().references(() => claimLineItems.id),
-  approvedAmountCents:integer('approved_amount_cents').notNull(),
-  reductionReasons:   jsonb('reduction_reasons').notNull().default([]),
-  explanationSteps:   jsonb('explanation_steps').notNull().default([]),
-  isActive:           boolean('is_active').notNull().default(true),
-  trigger:            text('trigger').notNull(),
-  adjudicatedAt:      timestamp('adjudicated_at').notNull().defaultNow()
+  id:                    uuid('id').primaryKey().defaultRandom(),
+  lineItemId:            uuid('line_item_id').notNull().references(() => claimLineItems.id),
+  approvedAmountCents:   integer('approved_amount_cents').notNull(),
+  deductibleAppliedCents:integer('deductible_applied_cents').notNull().default(0),
+  reductionReasons:      jsonb('reduction_reasons').notNull().default([]),
+  explanationSteps:      jsonb('explanation_steps').notNull().default([]),
+  isActive:              boolean('is_active').notNull().default(true),
+  trigger:               text('trigger').notNull(),
+  adjudicatedAt:         timestamp('adjudicated_at').notNull().defaultNow()
 })
 
 export const disputes = pgTable('disputes', {

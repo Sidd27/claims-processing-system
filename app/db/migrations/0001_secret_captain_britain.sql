@@ -1,0 +1,1 @@
+ALTER TABLE "adjudication_results" ADD COLUMN "deductible_applied_cents" integer DEFAULT 0 NOT NULL;
