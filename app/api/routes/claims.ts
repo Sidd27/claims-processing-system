@@ -6,6 +6,7 @@ import {
   markClaimPaid,
   reAdjudicateClaim,
 } from '../../services/claimService';
+import { manualReviewLineItem } from '../../services/adjudicationService';
 import type { SubmitClaimInput } from '../../services/claimService';
 
 const claimsRoutes: FastifyPluginAsync = async (fastify) => {
@@ -32,6 +33,14 @@ const claimsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { id: string } }>('/claims/:id/pay', async (request, reply) => {
     const claim = await markClaimPaid(request.params.id);
     return reply.send(claim);
+  });
+
+  fastify.post<{
+    Params: { claimId: string; lineItemId: string };
+    Body: { decision: 'approved' | 'denied' };
+  }>('/claims/:claimId/line-items/:lineItemId/manual-review', async (request, reply) => {
+    await manualReviewLineItem(request.params.lineItemId, request.body.decision);
+    return reply.status(200).send({ ok: true });
   });
 };
 

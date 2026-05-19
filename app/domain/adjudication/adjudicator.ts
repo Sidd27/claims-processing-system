@@ -147,5 +147,5 @@ export function adjudicate(lineItem: ClaimLineItem, rules: CoverageRule[], prior
 }
 
 function fmt(amount: number): string {
-  return (amount / 100).toFixed(2);
+  return amount.toFixed(2);
 }

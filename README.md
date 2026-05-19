@@ -326,6 +326,7 @@ The seed creates:
 - **Carol** — MENTAL_HEALTH $5,000 annual limit; two claims, second hits the limit → `partially_approved`
 - **Dave** — DENTAL $300 per-claim cap + 80% coinsurance; dispute opened and overturned → `approved` at full billed amount
 - **Emma** — VISION NOT_COVERED, eye exam claim → `denied`
+- **Frank** — MEDICAL $500 review threshold; $700 claim exceeds it → `under_review` (awaiting ops approve/deny)
 
 ### Run
 

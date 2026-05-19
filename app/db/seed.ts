@@ -21,7 +21,7 @@ async function seed() {
   // ── Members ───────────────────────────────────────────────────────────────
 
   console.log('Creating members...');
-  const [alice, bob, carol, dave, emma] = await db
+  const [alice, bob, carol, dave, emma, frank] = await db
     .insert(members)
     .values([
       { externalMemberId: 'M-ALICE-001', name: 'Alice Chen', dateOfBirth: '1985-03-12' },
@@ -29,13 +29,14 @@ async function seed() {
       { externalMemberId: 'M-CAROL-003', name: 'Carol White', dateOfBirth: '1992-11-05' },
       { externalMemberId: 'M-DAVE-004', name: 'Dave Patel', dateOfBirth: '1969-01-30' },
       { externalMemberId: 'M-EMMA-005', name: 'Emma Rodriguez', dateOfBirth: '2001-06-18' },
+      { externalMemberId: 'M-FRANK-006', name: 'Frank Nguyen', dateOfBirth: '1975-09-03' },
     ])
     .returning();
 
   // ── Policies ──────────────────────────────────────────────────────────────
 
   console.log('Creating policies...');
-  const [alicePolicy, bobPolicy, carolPolicy, davePolicy, emmaPolicy] = await db
+  const [alicePolicy, bobPolicy, carolPolicy, davePolicy, emmaPolicy, frankPolicy] = await db
     .insert(policies)
     .values([
       { memberId: alice.id, planName: 'Premier PPO', effectiveDate: '2026-01-01' },
@@ -43,6 +44,7 @@ async function seed() {
       { memberId: carol.id, planName: 'Behavioral Plus', effectiveDate: '2026-01-01' },
       { memberId: dave.id, planName: 'Dental Select', effectiveDate: '2026-01-01' },
       { memberId: emma.id, planName: 'Basic Vision Plan', effectiveDate: '2026-01-01' },
+      { memberId: frank.id, planName: 'High-Touch Care', effectiveDate: '2026-01-01' },
     ])
     .returning();
 
@@ -63,7 +65,7 @@ async function seed() {
       policyId: bobPolicy.id,
       serviceType: 'MEDICAL',
       ruleType: 'DEDUCTIBLE',
-      config: { type: 'DEDUCTIBLE', deductibleAmount: 500000 },
+      config: { type: 'DEDUCTIBLE', deductibleAmount: 5000 },
     },
     {
       policyId: bobPolicy.id,
@@ -77,7 +79,7 @@ async function seed() {
       policyId: carolPolicy.id,
       serviceType: 'MENTAL_HEALTH',
       ruleType: 'ANNUAL_LIMIT',
-      config: { type: 'ANNUAL_LIMIT', limitAmount: 500000 },
+      config: { type: 'ANNUAL_LIMIT', limitAmount: 5000 },
     },
     {
       policyId: carolPolicy.id,
@@ -91,7 +93,7 @@ async function seed() {
       policyId: davePolicy.id,
       serviceType: 'DENTAL',
       ruleType: 'PER_CLAIM_CAP',
-      config: { type: 'PER_CLAIM_CAP', capAmount: 30000 },
+      config: { type: 'PER_CLAIM_CAP', capAmount: 300 },
     },
     {
       policyId: davePolicy.id,
@@ -113,6 +115,20 @@ async function seed() {
       ruleType: 'NOT_COVERED',
       config: { type: 'NOT_COVERED' },
     },
+
+    // Frank — MEDICAL: $500 review threshold (demonstrates under_review / manual ops decision)
+    {
+      policyId: frankPolicy.id,
+      serviceType: 'MEDICAL',
+      ruleType: 'REVIEW_THRESHOLD',
+      config: { type: 'REVIEW_THRESHOLD', thresholdAmount: 500 },
+    },
+    {
+      policyId: frankPolicy.id,
+      serviceType: 'MEDICAL',
+      ruleType: 'COINSURANCE',
+      config: { type: 'COINSURANCE', coveragePercent: 0.8 },
+    },
   ]);
 
   // ── Carol: prior claim to consume $4,500 of the $5,000 annual limit ──────
@@ -129,7 +145,7 @@ async function seed() {
         cptCode: '90837',
         description: 'Individual therapy — prior session block',
         serviceDate: '2026-01-15',
-        billedAmount: 562500, // $5,625 billed; 80% = $4,500 approved (within $5,000 limit)
+        billedAmount: 5625, // $5,625 billed; 80% = $4,500 approved (within $5,000 limit)
       },
     ],
   });
@@ -148,7 +164,7 @@ async function seed() {
         cptCode: '99213',
         description: 'Office visit — upper respiratory infection',
         serviceDate: '2026-03-10',
-        billedAmount: 25000, // $250 billed; 80% = $200 approved
+        billedAmount: 250, // $250 billed; 80% = $200 approved
       },
     ],
   });
@@ -168,7 +184,7 @@ async function seed() {
         cptCode: '27447',
         description: 'Total knee replacement',
         serviceDate: '2026-04-02',
-        billedAmount: 1200000, // $12,000 billed; -$5,000 deductible = $7,000; 80% = $5,600 approved
+        billedAmount: 12000, // $12,000 billed; -$5,000 deductible = $7,000; 80% = $5,600 approved
       },
     ],
   });
@@ -188,7 +204,7 @@ async function seed() {
         cptCode: '90837',
         description: 'Individual therapy — follow-up sessions',
         serviceDate: '2026-05-10',
-        billedAmount: 100000, // $1,000 billed; only $500 remaining on limit; 80% of $500 = $400 approved
+        billedAmount: 1000, // $1,000 billed; only $500 remaining on limit; 80% of $500 = $400 approved
       },
     ],
   });
@@ -208,7 +224,7 @@ async function seed() {
         cptCode: 'D2750',
         description: 'Crown — posterior tooth',
         serviceDate: '2026-05-14',
-        billedAmount: 80000, // $800 billed; capped at $300; 80% of $300 = $240 approved
+        billedAmount: 800, // $800 billed; capped at $300; 80% of $300 = $240 approved
       },
     ],
   });
@@ -242,11 +258,31 @@ async function seed() {
         cptCode: '92004',
         description: 'Comprehensive eye exam',
         serviceDate: '2026-05-19',
-        billedAmount: 15000, // $150 billed; VISION not covered → $0 approved
+        billedAmount: 150, // $150 billed; VISION not covered → $0 approved
       },
     ],
   });
   console.log(`  Emma claim ${emmaClaim.id} → ${emmaClaim.status}`);
+
+  // ── Frank: exceeds review threshold → under_review (awaiting ops decision) ──
+
+  console.log('Creating Frank claim (hits review threshold)...');
+  const { claim: frankClaim } = await submitClaim({
+    memberId: frank.id,
+    providerName: 'Metro Surgical Center',
+    providerNpi: '1231231234',
+    diagnosisCode: 'M23.61',
+    lineItems: [
+      {
+        serviceType: 'MEDICAL',
+        cptCode: '29881',
+        description: 'Knee arthroscopy with meniscectomy',
+        serviceDate: '2026-05-20',
+        billedAmount: 700, // $700 — exceeds $500 threshold → needs_review
+      },
+    ],
+  });
+  console.log(`  Frank claim ${frankClaim.id} → ${frankClaim.status}`);
 
   console.log('\nSeed complete.');
   process.exit(0);

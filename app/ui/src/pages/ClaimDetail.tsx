@@ -57,6 +57,17 @@ export function ClaimDetail() {
     }
   }
 
+  async function handleManualReview(lineItemId: string, decision: 'approved' | 'denied') {
+    if (!id) return;
+    setActionPending(true);
+    try {
+      await api.manualReviewLineItem(id, lineItemId, decision);
+      await load();
+    } finally {
+      setActionPending(false);
+    }
+  }
+
   function toggleSteps(lineItemId: string) {
     setExpandedSteps((prev) => {
       const next = new Set(prev);
@@ -123,6 +134,9 @@ export function ClaimDetail() {
               onToggle={() => toggleSteps(li.id)}
               onDispute={() => setDisputeModal({ lineItemId: li.id })}
               onResolve={li.openDispute ? () => setResolveModal({ disputeId: li.openDispute!.id }) : undefined}
+              onManualApprove={li.status === 'needs_review' ? () => handleManualReview(li.id, 'approved') : undefined}
+              onManualDeny={li.status === 'needs_review' ? () => handleManualReview(li.id, 'denied') : undefined}
+              actionPending={actionPending}
             />
           ))}
         </div>
@@ -157,6 +171,9 @@ function LineItemRow({
   onToggle,
   onDispute,
   onResolve,
+  onManualApprove,
+  onManualDeny,
+  actionPending,
 }: {
   li: LineItemWithResult;
   claimStatus: string;
@@ -164,6 +181,9 @@ function LineItemRow({
   onToggle: () => void;
   onDispute: () => void;
   onResolve?: () => void;
+  onManualApprove?: () => void;
+  onManualDeny?: () => void;
+  actionPending?: boolean;
 }) {
   const result = li.adjudicationResult;
   const canDispute = claimStatus === 'partially_approved' || claimStatus === 'denied';
@@ -211,6 +231,28 @@ function LineItemRow({
             <div />
           )}
           <div className="flex items-center gap-2">
+            {onManualApprove && (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={onManualApprove}
+                disabled={actionPending}
+                className="text-green-600 hover:text-green-700 hover:bg-green-50 h-auto py-0.5 px-1"
+              >
+                Approve
+              </Button>
+            )}
+            {onManualDeny && (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={onManualDeny}
+                disabled={actionPending}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 h-auto py-0.5 px-1"
+              >
+                Deny
+              </Button>
+            )}
             {onResolve && (
               <Button
                 variant="ghost"

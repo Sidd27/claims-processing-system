@@ -77,7 +77,7 @@ describe('annual limit exhaustion across claims', () => {
       {
         serviceType: 'MENTAL_HEALTH',
         ruleType: 'ANNUAL_LIMIT',
-        config: { type: 'ANNUAL_LIMIT', limitAmount: 100000 },
+        config: { type: 'ANNUAL_LIMIT', limitAmount: 1000 },
       },
       {
         serviceType: 'MENTAL_HEALTH',
@@ -93,7 +93,7 @@ describe('annual limit exhaustion across claims', () => {
         cptCode: '90837',
         description: 'Therapy',
         serviceDate: '2026-01-10',
-        billedAmount: 60000,
+        billedAmount: 600,
       },
     ]);
     expect(r1.statusCode).toBe(201);
@@ -108,7 +108,7 @@ describe('annual limit exhaustion across claims', () => {
         cptCode: '90837',
         description: 'Therapy',
         serviceDate: '2026-02-10',
-        billedAmount: 80000,
+        billedAmount: 800,
       },
     ]);
     expect(r2.statusCode).toBe(201);
@@ -123,7 +123,7 @@ describe('annual limit exhaustion across claims', () => {
         cptCode: '90837',
         description: 'Therapy',
         serviceDate: '2026-03-10',
-        billedAmount: 20000,
+        billedAmount: 200,
       },
     ]);
     expect(r3.statusCode).toBe(201);
@@ -134,7 +134,7 @@ describe('annual limit exhaustion across claims', () => {
     // Verify final approved amounts via claim detail
     const detail2 = await app.inject({ method: 'GET', url: `/api/v1/claims/${c2.claim.id}` });
     const d2 = JSON.parse(detail2.body);
-    expect(d2.lineItems[0].adjudicationResult.approvedAmount).toBe(52000); // $520
+    expect(d2.lineItems[0].adjudicationResult.approvedAmount).toBe(520); // $520
 
     const detail3 = await app.inject({ method: 'GET', url: `/api/v1/claims/${c3.claim.id}` });
     const d3 = JSON.parse(detail3.body);
@@ -150,7 +150,7 @@ describe('dispute overturn re-derives claim status', () => {
       {
         serviceType: 'DENTAL',
         ruleType: 'PER_CLAIM_CAP',
-        config: { type: 'PER_CLAIM_CAP', capAmount: 20000 },
+        config: { type: 'PER_CLAIM_CAP', capAmount: 200 },
       },
       {
         serviceType: 'DENTAL',
@@ -166,7 +166,7 @@ describe('dispute overturn re-derives claim status', () => {
         cptCode: 'D2750',
         description: 'Crown',
         serviceDate: '2026-04-01',
-        billedAmount: 50000,
+        billedAmount: 500,
       },
     ]);
     expect(r1.statusCode).toBe(201);
@@ -197,7 +197,7 @@ describe('dispute overturn re-derives claim status', () => {
     const detail = await app.inject({ method: 'GET', url: `/api/v1/claims/${claim.id}` });
     const d = JSON.parse(detail.body);
     expect(d.claim.status).toBe('approved');
-    expect(d.lineItems[0].adjudicationResult.approvedAmount).toBe(50000);
+    expect(d.lineItems[0].adjudicationResult.approvedAmount).toBe(500);
   });
 
   it('upholding a dispute leaves claim status as partially_approved', async () => {
@@ -205,7 +205,7 @@ describe('dispute overturn re-derives claim status', () => {
       {
         serviceType: 'DENTAL',
         ruleType: 'PER_CLAIM_CAP',
-        config: { type: 'PER_CLAIM_CAP', capAmount: 20000 },
+        config: { type: 'PER_CLAIM_CAP', capAmount: 200 },
       },
     ] as any);
 
@@ -215,7 +215,7 @@ describe('dispute overturn re-derives claim status', () => {
         cptCode: 'D2750',
         description: 'Crown',
         serviceDate: '2026-04-01',
-        billedAmount: 50000,
+        billedAmount: 500,
       },
     ]);
     const { claim, lineItems } = JSON.parse(r1.body);
@@ -247,7 +247,7 @@ describe('prior usage reflects only active adjudication results', () => {
       {
         serviceType: 'MENTAL_HEALTH',
         ruleType: 'ANNUAL_LIMIT',
-        config: { type: 'ANNUAL_LIMIT', limitAmount: 100000 },
+        config: { type: 'ANNUAL_LIMIT', limitAmount: 1000 },
       },
     ] as any);
 
@@ -258,7 +258,7 @@ describe('prior usage reflects only active adjudication results', () => {
         cptCode: '90837',
         description: 'Therapy',
         serviceDate: '2026-01-10',
-        billedAmount: 80000,
+        billedAmount: 800,
       },
     ]);
     const c1 = JSON.parse(r1.body);
@@ -275,7 +275,7 @@ describe('prior usage reflects only active adjudication results', () => {
         cptCode: '90837',
         description: 'Therapy',
         serviceDate: '2026-02-10',
-        billedAmount: 100000,
+        billedAmount: 1000,
       },
     ]);
     const c2 = JSON.parse(r2.body);
@@ -285,7 +285,7 @@ describe('prior usage reflects only active adjudication results', () => {
 
     const detail = await app.inject({ method: 'GET', url: `/api/v1/claims/${c2.claim.id}` });
     const d = JSON.parse(detail.body);
-    expect(d.lineItems[0].adjudicationResult.approvedAmount).toBe(100000);
+    expect(d.lineItems[0].adjudicationResult.approvedAmount).toBe(1000);
   });
 });
 
@@ -308,14 +308,14 @@ describe('multi-line-item claim with mixed adjudication outcomes', () => {
         cptCode: '99213',
         description: 'Office visit',
         serviceDate: '2026-04-01',
-        billedAmount: 20000,
+        billedAmount: 200,
       },
       {
         serviceType: 'VISION',
         cptCode: '92004',
         description: 'Eye exam',
         serviceDate: '2026-04-01',
-        billedAmount: 10000,
+        billedAmount: 100,
       },
     ]);
     expect(r.statusCode).toBe(201);
@@ -328,7 +328,7 @@ describe('multi-line-item claim with mixed adjudication outcomes', () => {
     const medical = detailItems.find((li: any) => li.serviceType === 'MEDICAL');
     const vision = detailItems.find((li: any) => li.serviceType === 'VISION');
     expect(medical.status).toBe('covered');
-    expect(medical.adjudicationResult.approvedAmount).toBe(16000); // 80%
+    expect(medical.adjudicationResult.approvedAmount).toBe(160); // 80%
     expect(vision.status).toBe('denied');
     expect(vision.adjudicationResult.approvedAmount).toBe(0);
   });
@@ -342,7 +342,7 @@ describe('deductible paid carries across claims via deductibleAppliedAmount', ()
       {
         serviceType: 'MEDICAL',
         ruleType: 'DEDUCTIBLE',
-        config: { type: 'DEDUCTIBLE', deductibleAmount: 50000 },
+        config: { type: 'DEDUCTIBLE', deductibleAmount: 500 },
       },
       {
         serviceType: 'MEDICAL',
@@ -358,14 +358,14 @@ describe('deductible paid carries across claims via deductibleAppliedAmount', ()
         cptCode: '99213',
         description: 'Visit',
         serviceDate: '2026-01-10',
-        billedAmount: 30000,
+        billedAmount: 300,
       },
     ]);
     const c1 = JSON.parse(r1.body);
     const d1 = await app.inject({ method: 'GET', url: `/api/v1/claims/${c1.claim.id}` });
     const detail1 = JSON.parse(d1.body);
     expect(detail1.lineItems[0].adjudicationResult.approvedAmount).toBe(0);
-    expect(detail1.lineItems[0].adjudicationResult.deductibleAppliedAmount).toBe(30000);
+    expect(detail1.lineItems[0].adjudicationResult.deductibleAppliedAmount).toBe(300);
 
     // Claim 2: $400 billed — only $200 of deductible remains; $200 approved after 80% coinsurance
     const r2 = await submitClaim(memberId, [
@@ -374,15 +374,15 @@ describe('deductible paid carries across claims via deductibleAppliedAmount', ()
         cptCode: '99213',
         description: 'Follow-up',
         serviceDate: '2026-02-10',
-        billedAmount: 40000,
+        billedAmount: 400,
       },
     ]);
     const c2 = JSON.parse(r2.body);
     const d2 = await app.inject({ method: 'GET', url: `/api/v1/claims/${c2.claim.id}` });
     const detail2 = JSON.parse(d2.body);
     // $400 - $200 remaining deductible = $200, then 80% = $160
-    expect(detail2.lineItems[0].adjudicationResult.approvedAmount).toBe(16000);
-    expect(detail2.lineItems[0].adjudicationResult.deductibleAppliedAmount).toBe(20000);
+    expect(detail2.lineItems[0].adjudicationResult.approvedAmount).toBe(160);
+    expect(detail2.lineItems[0].adjudicationResult.deductibleAppliedAmount).toBe(200);
   });
 });
 
@@ -400,7 +400,7 @@ describe('pay claim guard', () => {
         cptCode: '92004',
         description: 'Eye exam',
         serviceDate: '2026-04-01',
-        billedAmount: 10000,
+        billedAmount: 100,
       },
     ]);
     const { claim } = JSON.parse(r.body);
@@ -416,7 +416,7 @@ describe('pay claim guard', () => {
       {
         serviceType: 'MEDICAL',
         ruleType: 'REVIEW_THRESHOLD',
-        config: { type: 'REVIEW_THRESHOLD', thresholdAmount: 10000 },
+        config: { type: 'REVIEW_THRESHOLD', thresholdAmount: 100 },
       },
     ] as any);
 
@@ -426,7 +426,7 @@ describe('pay claim guard', () => {
         cptCode: '99213',
         description: 'Expensive visit',
         serviceDate: '2026-04-01',
-        billedAmount: 50000,
+        billedAmount: 500,
       },
     ]);
     const { claim } = JSON.parse(r.body);
@@ -438,13 +438,18 @@ describe('pay claim guard', () => {
   });
 });
 
-// ── 7. Disputing a covered line item ─────────────────────────────────────────
+// ── 7. Disputing a line item on a partially_approved claim ────────────────────
 
-describe('disputing a covered line item', () => {
-  it('allows opening a dispute when the line item is covered and claim is approved', async () => {
+describe('disputing a line item on a partially_approved claim', () => {
+  it('allows opening a dispute when the claim is partially_approved', async () => {
     const { memberId } = await createMember([
       {
-        serviceType: 'MEDICAL',
+        serviceType: 'DENTAL',
+        ruleType: 'PER_CLAIM_CAP',
+        config: { type: 'PER_CLAIM_CAP', capAmount: 200 },
+      },
+      {
+        serviceType: 'DENTAL',
         ruleType: 'COINSURANCE',
         config: { type: 'COINSURANCE', coveragePercent: 0.8 },
       },
@@ -452,21 +457,20 @@ describe('disputing a covered line item', () => {
 
     const r = await submitClaim(memberId, [
       {
-        serviceType: 'MEDICAL',
-        cptCode: '99213',
-        description: 'Office visit',
+        serviceType: 'DENTAL',
+        cptCode: 'D2750',
+        description: 'Crown',
         serviceDate: '2026-04-01',
-        billedAmount: 20000,
+        billedAmount: 500,
       },
     ]);
     const { claim, lineItems } = JSON.parse(r.body);
-    expect(claim.status).toBe('approved');
-    expect(lineItems[0].status).toBe('covered');
+    expect(claim.status).toBe('partially_approved');
 
     const dr = await app.inject({
       method: 'POST',
       url: `/api/v1/claims/${claim.id}/line-items/${lineItems[0].id}/dispute`,
-      payload: { memberReason: 'I was charged incorrectly for this visit.' },
+      payload: { memberReason: 'Cap should not apply — medically necessary.' },
     });
     expect(dr.statusCode).toBe(201);
     const dispute = JSON.parse(dr.body);

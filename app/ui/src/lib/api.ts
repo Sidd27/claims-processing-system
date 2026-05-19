@@ -22,6 +22,8 @@ export const api = {
     req<Dispute>('POST', `/claims/${claimId}/line-items/${lineItemId}/dispute`, { memberReason }),
   resolveDispute: (id: string, resolution: 'upheld' | 'overturned', resolverNote: string) =>
     req<Dispute>('POST', `/disputes/${id}/resolve`, { resolution, resolverNote }),
+  manualReviewLineItem: (claimId: string, lineItemId: string, decision: 'approved' | 'denied') =>
+    req<{ ok: boolean }>('POST', `/claims/${claimId}/line-items/${lineItemId}/manual-review`, { decision }),
 };
 
 export interface Member {
