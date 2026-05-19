@@ -13,8 +13,8 @@ function catchCode(fn: () => void): string {
 }
 
 describe('assertCanOpenDispute', () => {
-  it('allows dispute when claim is approved', () => {
-    expect(() => assertCanOpenDispute('approved')).not.toThrow();
+  it('throws CLAIM_NOT_DISPUTABLE when claim is approved — fully approved claims cannot be disputed', () => {
+    expect(catchCode(() => assertCanOpenDispute('approved'))).toBe('CLAIM_NOT_DISPUTABLE');
   });
 
   it('allows dispute when claim is partially_approved', () => {

@@ -4,14 +4,14 @@ import type { ClaimStatus, LineItemStatus } from './types';
 const TRANSITIONS: Record<ClaimStatus, ClaimStatus[]> = {
   submitted: ['under_review', 'approved', 'partially_approved', 'denied'],
   under_review: ['approved', 'partially_approved', 'denied'],
-  approved: ['paid', 'disputed'],
+  approved: ['paid'],
   partially_approved: ['paid', 'disputed'],
   denied: ['disputed'],
   paid: [],
   disputed: ['approved', 'partially_approved', 'denied'],
 };
 
-export const DISPUTABLE_STATES: ClaimStatus[] = ['approved', 'partially_approved', 'denied'];
+export const DISPUTABLE_STATES: ClaimStatus[] = ['partially_approved', 'denied'];
 export const PAYABLE_STATES: ClaimStatus[] = ['approved', 'partially_approved'];
 
 export function deriveClaimStatus(statuses: LineItemStatus[]): ClaimStatus {

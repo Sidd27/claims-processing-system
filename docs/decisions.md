@@ -86,3 +86,14 @@ Line item disputes also make the overturn logic precise: overturning a dispute a
 Re-running the pipeline on overturn would re-apply deductibles, caps, and annual limits — which would still reduce the approved amount, defeating the purpose of the overturn. An overturn is a clinical/administrative decision that the original rules should not have applied to this specific service; the approved amount is set by policy, not by re-calculation.
 
 **Tradeoff:** The overturn result has empty `reductionReasons` and a single `DISPUTE_OVERTURN` explanation step. This is intentional — the standard pipeline explanation does not apply.
+
+---
+
+## 8. Dispute resolution UI is ops-facing, not member-facing
+
+**Decision:** The "Resolve Dispute" button on the claim detail page is an internal ops/admin action. It is surfaced in the same UI as the member-facing views for demonstration purposes, but in production it would live behind a staff role check.
+
+**Why not hide it entirely?**
+The assignment required demonstrating the full dispute lifecycle including resolution. Showing it in the UI makes the capability visible and testable without requiring a separate admin interface to be built.
+
+**How it works:** The detail page fetches the open dispute for each line item alongside the adjudication result. If a line item has an open dispute, the "Resolve Dispute" button appears. The member-facing "Open Dispute" button and the ops-facing "Resolve Dispute" button are shown in the same row but are logically separate actions.

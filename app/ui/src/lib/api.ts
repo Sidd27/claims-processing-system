@@ -34,6 +34,7 @@ export interface Member {
 export interface Claim {
   id: string;
   memberId: string;
+  memberName: string;
   policyId: string;
   providerName: string;
   providerNpi: string;
@@ -69,6 +70,7 @@ export interface LineItemWithResult {
   billedAmount: number;
   status: string;
   adjudicationResult: AdjudicationResult | null;
+  openDispute: { id: string; memberReason: string } | null;
 }
 
 export interface ClaimDetail {

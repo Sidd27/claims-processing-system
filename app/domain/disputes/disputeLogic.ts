@@ -9,7 +9,7 @@ export function assertCanOpenDispute(claimStatus: ClaimStatus): void {
   if (!DISPUTABLE_STATES.includes(claimStatus))
     throw new DomainError(
       'CLAIM_NOT_DISPUTABLE',
-      `Claim must be in approved, partially_approved, or denied status to open a dispute (current: ${claimStatus})`
+      `Claim must be in partially_approved or denied status to open a dispute (current: ${claimStatus})`
     );
 }
 

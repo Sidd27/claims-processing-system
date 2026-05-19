@@ -87,11 +87,11 @@ export function ClaimDetail() {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-xl font-semibold text-foreground font-mono">{claim.id.slice(0, 8)}…</h1>
+                <h1 className="text-xl font-semibold text-foreground font-mono">{claim.id}</h1>
                 <StatusBadge status={claim.status} />
               </div>
               <p className="text-sm text-muted-foreground">
-                {claim.providerName} · {claim.diagnosisCode} · Submitted {dateStr(claim.submittedAt)}
+                {claim.memberName} · {claim.providerName} · {claim.diagnosisCode} · Submitted {dateStr(claim.submittedAt)}
               </p>
             </div>
             <div className="flex gap-2">
@@ -122,6 +122,7 @@ export function ClaimDetail() {
               expanded={expandedSteps.has(li.id)}
               onToggle={() => toggleSteps(li.id)}
               onDispute={() => setDisputeModal({ lineItemId: li.id })}
+              onResolve={li.openDispute ? () => setResolveModal({ disputeId: li.openDispute!.id }) : undefined}
             />
           ))}
         </div>
@@ -155,16 +156,17 @@ function LineItemRow({
   expanded,
   onToggle,
   onDispute,
+  onResolve,
 }: {
   li: LineItemWithResult;
   claimStatus: string;
   expanded: boolean;
   onToggle: () => void;
   onDispute: () => void;
+  onResolve?: () => void;
 }) {
   const result = li.adjudicationResult;
-  const DISPUTABLE = ['approved', 'partially_approved', 'denied'];
-  const canDispute = DISPUTABLE.includes(claimStatus);
+  const canDispute = claimStatus === 'partially_approved' || claimStatus === 'denied';
 
   return (
     <div className="border-b border-border last:border-0">
@@ -208,16 +210,28 @@ function LineItemRow({
           ) : (
             <div />
           )}
-          {canDispute && (
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={onDispute}
-              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 h-auto py-0.5 px-1"
-            >
-              Open Dispute
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {onResolve && (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={onResolve}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-auto py-0.5 px-1"
+              >
+                Resolve Dispute
+              </Button>
+            )}
+            {canDispute && (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={onDispute}
+                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 h-auto py-0.5 px-1"
+              >
+                Open Dispute
+              </Button>
+            )}
+          </div>
         </div>
 
         {expanded && result && result.explanationSteps.length > 0 && (

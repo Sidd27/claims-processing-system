@@ -4,6 +4,7 @@ import { getLineItemsByClaimId, createLineItems } from '../db/repositories/lineI
 import { getActivePolicy } from '../db/repositories/policies';
 import { getMember } from '../db/repositories/members';
 import { getActiveResult } from '../db/repositories/adjudicationResults';
+import { getDisputesByLineItemId } from '../db/repositories/disputes';
 import { adjudicateClaim } from './adjudicationService';
 import { assertValidTransition, PAYABLE_STATES } from '../domain/claims/stateMachine';
 import { DomainError } from '../domain/errors';
@@ -62,10 +63,14 @@ export async function getClaimDetail(claimId: string) {
   const lineItems = await getLineItemsByClaimId(claimId);
 
   const lineItemsWithResults = await Promise.all(
-    lineItems.map(async (li) => ({
-      ...li,
-      adjudicationResult: await getActiveResult(li.id),
-    }))
+    lineItems.map(async (li) => {
+      const disputes = await getDisputesByLineItemId(li.id);
+      return {
+        ...li,
+        adjudicationResult: await getActiveResult(li.id),
+        openDispute: disputes.find((d) => d.status === 'open') ?? null,
+      };
+    })
   );
 
   return { claim, lineItems: lineItemsWithResults };

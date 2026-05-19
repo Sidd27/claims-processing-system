@@ -73,8 +73,8 @@ describe('assertValidTransition', () => {
     expect(() => assertValidTransition('approved', 'paid')).not.toThrow();
   });
 
-  it('allows approved → disputed', () => {
-    expect(() => assertValidTransition('approved', 'disputed')).not.toThrow();
+  it('rejects approved → disputed', () => {
+    expect(() => assertValidTransition('approved', 'disputed')).toThrow(DomainError);
   });
 
   it('rejects paid → disputed', () => {
@@ -105,8 +105,8 @@ describe('assertCanFlagForReview', () => {
 });
 
 describe('DISPUTABLE_STATES and PAYABLE_STATES', () => {
-  it('DISPUTABLE_STATES includes approved, partially_approved, denied', () => {
-    expect(DISPUTABLE_STATES).toContain('approved');
+  it('DISPUTABLE_STATES includes partially_approved and denied only', () => {
+    expect(DISPUTABLE_STATES).not.toContain('approved');
     expect(DISPUTABLE_STATES).toContain('partially_approved');
     expect(DISPUTABLE_STATES).toContain('denied');
     expect(DISPUTABLE_STATES).not.toContain('paid');
