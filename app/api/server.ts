@@ -15,9 +15,7 @@ export function buildServer() {
       return reply.status(422).send({ error: error.code, message: error.message });
     }
     app.log.error(error);
-    return reply
-      .status(500)
-      .send({ error: 'INTERNAL_ERROR', message: 'An unexpected error occurred' });
+    return reply.status(500).send({ error: 'INTERNAL_ERROR', message: 'An unexpected error occurred' });
   });
 
   app.register(claimsRoutes, { prefix: '/api/v1' });

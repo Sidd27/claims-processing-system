@@ -11,13 +11,7 @@ export const CLAIM_STATUSES = [
 ] as const;
 export type ClaimStatus = (typeof CLAIM_STATUSES)[number];
 
-export const LINE_ITEM_STATUSES = [
-  'pending',
-  'covered',
-  'partially_covered',
-  'denied',
-  'needs_review',
-] as const;
+export const LINE_ITEM_STATUSES = ['pending', 'covered', 'partially_covered', 'denied', 'needs_review'] as const;
 export type LineItemStatus = (typeof LINE_ITEM_STATUSES)[number];
 
 export interface Claim {

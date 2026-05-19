@@ -86,14 +86,11 @@ export function ClaimDetail() {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-xl font-semibold text-gray-900 font-mono">
-                  {claim.id.slice(0, 8)}…
-                </h1>
+                <h1 className="text-xl font-semibold text-gray-900 font-mono">{claim.id.slice(0, 8)}…</h1>
                 <StatusBadge status={claim.status} />
               </div>
               <p className="text-sm text-gray-500">
-                {claim.providerName} · {claim.diagnosisCode} · Submitted{' '}
-                {dateStr(claim.submittedAt)}
+                {claim.providerName} · {claim.diagnosisCode} · Submitted {dateStr(claim.submittedAt)}
               </p>
             </div>
             <div className="flex gap-2">
@@ -202,10 +199,7 @@ function LineItemRow({
         {result && result.reductionReasons.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {result.reductionReasons.map((r) => (
-              <span
-                key={r}
-                className="text-xs bg-red-50 text-red-600 px-1.5 py-0.5 rounded font-mono"
-              >
+              <span key={r} className="text-xs bg-red-50 text-red-600 px-1.5 py-0.5 rounded font-mono">
                 {r}
               </span>
             ))}
@@ -237,10 +231,7 @@ function LineItemRow({
         {expanded && result && result.explanationSteps.length > 0 && (
           <div className="mt-3 space-y-1.5">
             {result.explanationSteps.map((step, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 bg-gray-50 rounded-lg px-3 py-2 text-xs"
-              >
+              <div key={i} className="flex items-start gap-3 bg-gray-50 rounded-lg px-3 py-2 text-xs">
                 <span className="font-mono text-gray-500 shrink-0 pt-0.5">{step.rule}</span>
                 <span className="text-gray-600 flex-1">{step.description}</span>
                 <span className="text-gray-400 shrink-0 font-mono">

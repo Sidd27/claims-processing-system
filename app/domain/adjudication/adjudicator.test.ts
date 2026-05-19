@@ -20,10 +20,7 @@ function makeLineItem(overrides: Partial<ClaimLineItem> = {}): ClaimLineItem {
   };
 }
 
-function makeRule(
-  config: CoverageRule['config'],
-  serviceType: CoverageRule['serviceType'] = 'MEDICAL'
-): CoverageRule {
+function makeRule(config: CoverageRule['config'], serviceType: CoverageRule['serviceType'] = 'MEDICAL'): CoverageRule {
   return { id: 'r-1', policyId: 'p-1', serviceType, ruleType: config.type, config };
 }
 

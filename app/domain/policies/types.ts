@@ -1,10 +1,4 @@
-export const SERVICE_TYPES = [
-  'MEDICAL',
-  'DENTAL',
-  'VISION',
-  'MENTAL_HEALTH',
-  'PRESCRIPTION',
-] as const;
+export const SERVICE_TYPES = ['MEDICAL', 'DENTAL', 'VISION', 'MENTAL_HEALTH', 'PRESCRIPTION'] as const;
 export type ServiceType = (typeof SERVICE_TYPES)[number];
 
 export type CoverageRuleConfig =

@@ -80,13 +80,8 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl p-6 focus:outline-none">
           <div className="flex items-center justify-between mb-5">
-            <Dialog.Title className="text-lg font-semibold text-gray-900">
-              Submit New Claim
-            </Dialog.Title>
-            <button
-              onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
+            <Dialog.Title className="text-lg font-semibold text-gray-900">Submit New Claim</Dialog.Title>
+            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 transition-colors">
               <X size={20} />
             </button>
           </div>
@@ -113,9 +108,7 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
             {/* Provider */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Provider Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Provider Name</label>
                 <input
                   required
                   value={providerName}
@@ -138,9 +131,7 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
 
             {/* Diagnosis */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Diagnosis Code (ICD-10)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Code (ICD-10)</label>
               <input
                 required
                 value={diagnosisCode}
@@ -176,9 +167,7 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
                     )}
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Service Type
-                        </label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Service Type</label>
                         <select
                           value={li.serviceType}
                           onChange={(e) => updateLineItem(idx, 'serviceType', e.target.value)}
@@ -190,9 +179,7 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          CPT Code
-                        </label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">CPT Code</label>
                         <input
                           required
                           value={li.cptCode}
@@ -203,9 +190,7 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
                       </div>
                     </div>
                     <div className="mb-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">
-                        Description
-                      </label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
                       <input
                         required
                         value={li.description}
@@ -216,9 +201,7 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Service Date
-                        </label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Service Date</label>
                         <input
                           required
                           type="date"
@@ -228,9 +211,7 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Billed Amount ($)
-                        </label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Billed Amount ($)</label>
                         <input
                           required
                           type="number"
@@ -255,9 +236,7 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">
-                {error}
-              </div>
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">{error}</div>
             )}
 
             <div className="flex justify-end gap-2 pt-2">

@@ -3,15 +3,7 @@ import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { buildServer } from './server';
 import { db, pool } from '../db/client';
-import {
-  disputes,
-  adjudicationResults,
-  claimLineItems,
-  claims,
-  coverageRules,
-  policies,
-  members,
-} from '../db/schema';
+import { disputes, adjudicationResults, claimLineItems, claims, coverageRules, policies, members } from '../db/schema';
 
 const app = buildServer();
 
@@ -274,10 +266,7 @@ describe('prior usage reflects only active adjudication results', () => {
 
     // Manually deactivate that result (simulates a re-adjudication pass)
     const lineItemId = c1.lineItems[0].id;
-    await db
-      .update(adjudicationResults)
-      .set({ isActive: false })
-      .where(eq(adjudicationResults.lineItemId, lineItemId));
+    await db.update(adjudicationResults).set({ isActive: false }).where(eq(adjudicationResults.lineItemId, lineItemId));
 
     // Now submit a second claim — should see $0 prior usage (deactivated result ignored)
     const r2 = await submitClaim(memberId, [

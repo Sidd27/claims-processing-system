@@ -1,14 +1,6 @@
 import 'dotenv/config';
 import { db } from './client';
-import {
-  members,
-  policies,
-  coverageRules,
-  claims,
-  claimLineItems,
-  adjudicationResults,
-  disputes,
-} from './schema';
+import { members, policies, coverageRules, claims, claimLineItems, adjudicationResults, disputes } from './schema';
 import { submitClaim } from '../services/claimService';
 import { openDispute, resolveDispute } from '../services/disputeService';
 

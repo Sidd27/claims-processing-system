@@ -43,21 +43,14 @@ export function DisputeModal({ open, claimId, lineItemId, onClose, onSuccess }: 
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-xl shadow-2xl p-6 focus:outline-none">
           <div className="flex items-center justify-between mb-4">
-            <Dialog.Title className="text-lg font-semibold text-gray-900">
-              Open Dispute
-            </Dialog.Title>
-            <button
-              onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
+            <Dialog.Title className="text-lg font-semibold text-gray-900">Open Dispute</Dialog.Title>
+            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 transition-colors">
               <X size={20} />
             </button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reason for Dispute
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Dispute</label>
               <textarea
                 required
                 value={reason}
@@ -68,9 +61,7 @@ export function DisputeModal({ open, claimId, lineItemId, onClose, onSuccess }: 
               />
             </div>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">
-                {error}
-              </div>
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">{error}</div>
             )}
             <div className="flex justify-end gap-2">
               <button

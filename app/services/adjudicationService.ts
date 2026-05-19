@@ -2,10 +2,7 @@ import { db } from '../db/client';
 import { getClaim, updateClaimStatus } from '../db/repositories/claims';
 import { getLineItemsByClaimId, updateLineItemStatus } from '../db/repositories/lineItems';
 import { getCoverageRules } from '../db/repositories/policies';
-import {
-  createAdjudicationResult,
-  deactivateResults,
-} from '../db/repositories/adjudicationResults';
+import { createAdjudicationResult, deactivateResults } from '../db/repositories/adjudicationResults';
 import { computePriorUsage } from '../db/repositories/limitUsage';
 import { adjudicate } from '../domain/adjudication/adjudicator';
 import { deriveClaimStatus, assertCanFlagForReview } from '../domain/claims/stateMachine';
@@ -13,10 +10,7 @@ import { DomainError } from '../domain/errors';
 import type { ServiceType } from '../domain/policies/types';
 import type { AdjudicationTrigger } from '../domain/adjudication/types';
 
-export async function adjudicateClaim(
-  claimId: string,
-  trigger: AdjudicationTrigger
-): Promise<void> {
+export async function adjudicateClaim(claimId: string, trigger: AdjudicationTrigger): Promise<void> {
   await db.transaction(async (tx) => {
     const anyTx = tx as unknown as typeof db;
 
@@ -28,17 +22,10 @@ export async function adjudicateClaim(
     const lineItems = await getLineItemsByClaimId(claimId, anyTx);
     const rules = await getCoverageRules(claim.policyId, anyTx);
 
-    for (const li of lineItems.filter(
-      (li) => li.status === 'pending' || li.status === 'needs_review'
-    )) {
+    for (const li of lineItems.filter((li) => li.status === 'pending' || li.status === 'needs_review')) {
       const filteredRules = rules.filter((r) => r.serviceType === li.serviceType);
       const year = new Date(li.serviceDate).getFullYear();
-      const priorUsage = await computePriorUsage(
-        claim.memberId,
-        li.serviceType as ServiceType,
-        year,
-        anyTx
-      );
+      const priorUsage = await computePriorUsage(claim.memberId, li.serviceType as ServiceType, year, anyTx);
       const output = adjudicate(li, filteredRules, priorUsage);
 
       if (output.outcome === 'complete') {

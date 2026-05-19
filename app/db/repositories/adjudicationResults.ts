@@ -1,11 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../client';
 import { adjudicationResults } from '../schema';
-import type {
-  ReductionReason,
-  ExplanationStep,
-  AdjudicationTrigger,
-} from '../../domain/adjudication/types';
+import type { ReductionReason, ExplanationStep, AdjudicationTrigger } from '../../domain/adjudication/types';
 
 type DbClient = typeof db;
 
@@ -18,10 +14,7 @@ export interface CreateAdjudicationResultInput {
   trigger: AdjudicationTrigger;
 }
 
-export async function createAdjudicationResult(
-  input: CreateAdjudicationResultInput,
-  dbClient: DbClient = db
-) {
+export async function createAdjudicationResult(input: CreateAdjudicationResultInput, dbClient: DbClient = db) {
   const result = await dbClient.insert(adjudicationResults).values(input).returning();
   return result[0];
 }

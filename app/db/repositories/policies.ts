@@ -10,14 +10,8 @@ export async function getActivePolicy(memberId: string, dbClient: DbClient = db)
   return result[0] ?? null;
 }
 
-export async function getCoverageRules(
-  policyId: string,
-  dbClient: DbClient = db
-): Promise<CoverageRule[]> {
-  const rows = await dbClient
-    .select()
-    .from(coverageRules)
-    .where(eq(coverageRules.policyId, policyId));
+export async function getCoverageRules(policyId: string, dbClient: DbClient = db): Promise<CoverageRule[]> {
+  const rows = await dbClient.select().from(coverageRules).where(eq(coverageRules.policyId, policyId));
 
   return rows.map((row) => ({
     id: row.id,

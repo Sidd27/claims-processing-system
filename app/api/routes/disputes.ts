@@ -15,11 +15,7 @@ const disputesRoutes: FastifyPluginAsync = async (fastify) => {
     Params: { id: string };
     Body: { resolution: DisputeResolution; resolverNote: string };
   }>('/disputes/:id/resolve', async (request, reply) => {
-    const dispute = await resolveDispute(
-      request.params.id,
-      request.body.resolution,
-      request.body.resolverNote
-    );
+    const dispute = await resolveDispute(request.params.id, request.body.resolution, request.body.resolverNote);
     return reply.send(dispute);
   });
 };

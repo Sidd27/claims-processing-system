@@ -9,11 +9,7 @@ const CAPACITY_CONSTRAINTS: ReductionReason[] = [
   'ANNUAL_LIMIT_EXHAUSTED',
 ];
 
-export function adjudicate(
-  lineItem: ClaimLineItem,
-  rules: CoverageRule[],
-  priorUsage: PriorUsage
-): AdjudicationOutput {
+export function adjudicate(lineItem: ClaimLineItem, rules: CoverageRule[], priorUsage: PriorUsage): AdjudicationOutput {
   // Caller is responsible for passing only rules matching lineItem.serviceType
 
   // Step 1: NOT_COVERED (short-circuit, no math)

@@ -15,27 +15,15 @@ export interface CreateLineItemInput {
   billedAmountCents: number;
 }
 
-export async function getLineItem(
-  lineItemId: string,
-  dbClient: DbClient = db
-): Promise<ClaimLineItem | null> {
-  const result = await dbClient
-    .select()
-    .from(claimLineItems)
-    .where(eq(claimLineItems.id, lineItemId));
+export async function getLineItem(lineItemId: string, dbClient: DbClient = db): Promise<ClaimLineItem | null> {
+  const result = await dbClient.select().from(claimLineItems).where(eq(claimLineItems.id, lineItemId));
   const row = result[0];
   if (!row) return null;
   return mapToLineItem(row);
 }
 
-export async function getLineItemsByClaimId(
-  claimId: string,
-  dbClient: DbClient = db
-): Promise<ClaimLineItem[]> {
-  const rows = await dbClient
-    .select()
-    .from(claimLineItems)
-    .where(eq(claimLineItems.claimId, claimId));
+export async function getLineItemsByClaimId(claimId: string, dbClient: DbClient = db): Promise<ClaimLineItem[]> {
+  const rows = await dbClient.select().from(claimLineItems).where(eq(claimLineItems.claimId, claimId));
   return rows.map(mapToLineItem);
 }
 
@@ -43,11 +31,7 @@ export async function createLineItems(inputs: CreateLineItemInput[], dbClient: D
   return dbClient.insert(claimLineItems).values(inputs).returning();
 }
 
-export async function updateLineItemStatus(
-  lineItemId: string,
-  status: LineItemStatus,
-  dbClient: DbClient = db
-) {
+export async function updateLineItemStatus(lineItemId: string, status: LineItemStatus, dbClient: DbClient = db) {
   await dbClient.update(claimLineItems).set({ status }).where(eq(claimLineItems.id, lineItemId));
 }
 

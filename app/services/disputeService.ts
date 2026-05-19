@@ -1,24 +1,9 @@
 import { db } from '../db/client';
 import { getClaim, updateClaimStatus } from '../db/repositories/claims';
-import {
-  getLineItem,
-  getLineItemsByClaimId,
-  updateLineItemStatus,
-} from '../db/repositories/lineItems';
-import {
-  createDispute,
-  getDispute,
-  getDisputesByLineItemId,
-  markDisputeResolved,
-} from '../db/repositories/disputes';
-import {
-  deactivateResults,
-  createAdjudicationResult,
-} from '../db/repositories/adjudicationResults';
-import {
-  assertCanOpenDispute,
-  assertDisputeNotAlreadyResolved,
-} from '../domain/disputes/disputeLogic';
+import { getLineItem, getLineItemsByClaimId, updateLineItemStatus } from '../db/repositories/lineItems';
+import { createDispute, getDispute, getDisputesByLineItemId, markDisputeResolved } from '../db/repositories/disputes';
+import { deactivateResults, createAdjudicationResult } from '../db/repositories/adjudicationResults';
+import { assertCanOpenDispute, assertDisputeNotAlreadyResolved } from '../domain/disputes/disputeLogic';
 import { deriveClaimStatus } from '../domain/claims/stateMachine';
 import { DomainError } from '../domain/errors';
 import type { DisputeResolution } from '../domain/disputes/types';
@@ -46,11 +31,7 @@ export async function openDispute(lineItemId: string, memberReason: string) {
   return dispute;
 }
 
-export async function resolveDispute(
-  disputeId: string,
-  resolution: DisputeResolution,
-  resolverNote: string
-) {
+export async function resolveDispute(disputeId: string, resolution: DisputeResolution, resolverNote: string) {
   await db.transaction(async (tx) => {
     const anyTx = tx as unknown as typeof db;
 
@@ -60,8 +41,7 @@ export async function resolveDispute(
     assertDisputeNotAlreadyResolved(dispute.status);
 
     const lineItem = await getLineItem(dispute.lineItemId, anyTx);
-    if (!lineItem)
-      throw new DomainError('LINE_ITEM_NOT_FOUND', `Line item not found: ${dispute.lineItemId}`);
+    if (!lineItem) throw new DomainError('LINE_ITEM_NOT_FOUND', `Line item not found: ${dispute.lineItemId}`);
 
     const claim = await getClaim(lineItem.claimId, anyTx);
     if (!claim) throw new DomainError('CLAIM_NOT_FOUND');

@@ -48,8 +48,6 @@ describe('assertDisputeNotAlreadyResolved', () => {
   });
 
   it('throws DISPUTE_ALREADY_RESOLVED when dispute is already resolved', () => {
-    expect(catchCode(() => assertDisputeNotAlreadyResolved('resolved'))).toBe(
-      'DISPUTE_ALREADY_RESOLVED'
-    );
+    expect(catchCode(() => assertDisputeNotAlreadyResolved('resolved'))).toBe('DISPUTE_ALREADY_RESOLVED');
   });
 });

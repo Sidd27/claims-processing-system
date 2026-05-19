@@ -36,9 +36,7 @@ describe('deriveClaimStatus', () => {
   });
 
   it('derives partially_approved when all line items are partially_covered', () => {
-    expect(deriveClaimStatus(['partially_covered', 'partially_covered'])).toBe(
-      'partially_approved'
-    );
+    expect(deriveClaimStatus(['partially_covered', 'partially_covered'])).toBe('partially_approved');
   });
 
   it('derives under_review when any line item is needs_review', () => {
@@ -54,15 +52,11 @@ describe('deriveClaimStatus', () => {
   });
 
   it('throws LINE_ITEMS_NOT_YET_ADJUDICATED when any line item is still pending', () => {
-    expect(catchCode(() => deriveClaimStatus(['pending', 'pending']))).toBe(
-      'LINE_ITEMS_NOT_YET_ADJUDICATED'
-    );
+    expect(catchCode(() => deriveClaimStatus(['pending', 'pending']))).toBe('LINE_ITEMS_NOT_YET_ADJUDICATED');
   });
 
   it('throws LINE_ITEMS_NOT_YET_ADJUDICATED when pending is mixed with adjudicated statuses', () => {
-    expect(catchCode(() => deriveClaimStatus(['covered', 'pending']))).toBe(
-      'LINE_ITEMS_NOT_YET_ADJUDICATED'
-    );
+    expect(catchCode(() => deriveClaimStatus(['covered', 'pending']))).toBe('LINE_ITEMS_NOT_YET_ADJUDICATED');
   });
 });
 

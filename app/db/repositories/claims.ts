@@ -27,10 +27,6 @@ export async function createClaim(input: CreateClaimInput, dbClient: DbClient = 
   return result[0];
 }
 
-export async function updateClaimStatus(
-  claimId: string,
-  status: ClaimStatus,
-  dbClient: DbClient = db
-) {
+export async function updateClaimStatus(claimId: string, status: ClaimStatus, dbClient: DbClient = db) {
   await dbClient.update(claims).set({ status }).where(eq(claims.id, claimId));
 }

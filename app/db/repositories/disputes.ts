@@ -14,20 +14,14 @@ export async function createDispute(
   return mapToDispute(result[0]);
 }
 
-export async function getDispute(
-  disputeId: string,
-  dbClient: DbClient = db
-): Promise<Dispute | null> {
+export async function getDispute(disputeId: string, dbClient: DbClient = db): Promise<Dispute | null> {
   const result = await dbClient.select().from(disputes).where(eq(disputes.id, disputeId));
   const row = result[0];
   if (!row) return null;
   return mapToDispute(row);
 }
 
-export async function getDisputesByLineItemId(
-  lineItemId: string,
-  dbClient: DbClient = db
-): Promise<Dispute[]> {
+export async function getDisputesByLineItemId(lineItemId: string, dbClient: DbClient = db): Promise<Dispute[]> {
   const rows = await dbClient.select().from(disputes).where(eq(disputes.lineItemId, lineItemId));
   return rows.map(mapToDispute);
 }
