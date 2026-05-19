@@ -1,6 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { ClaimsList } from './pages/ClaimsList'
-import { ClaimDetail } from './pages/ClaimDetail'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ClaimsList } from './pages/ClaimsList';
+import { ClaimDetail } from './pages/ClaimDetail';
 
 export default function App() {
   return (
@@ -10,5 +10,5 @@ export default function App() {
         <Route path="/claims/:id" element={<ClaimDetail />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }

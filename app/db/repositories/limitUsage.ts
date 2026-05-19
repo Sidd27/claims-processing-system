@@ -1,10 +1,10 @@
-import { eq, and, sql } from 'drizzle-orm'
-import { db } from '../client'
-import { adjudicationResults, claimLineItems, claims } from '../schema'
-import type { PriorUsage } from '../../domain/adjudication/types'
-import type { ServiceType } from '../../domain/policies/types'
+import { eq, and, sql } from 'drizzle-orm';
+import { db } from '../client';
+import { adjudicationResults, claimLineItems, claims } from '../schema';
+import type { PriorUsage } from '../../domain/adjudication/types';
+import type { ServiceType } from '../../domain/policies/types';
 
-type DbClient = typeof db
+type DbClient = typeof db;
 
 export async function computePriorUsage(
   memberId: string,
@@ -15,7 +15,7 @@ export async function computePriorUsage(
   const rows = await dbClient
     .select({
       approvedAmountCents: adjudicationResults.approvedAmountCents,
-      deductibleAppliedCents: adjudicationResults.deductibleAppliedCents
+      deductibleAppliedCents: adjudicationResults.deductibleAppliedCents,
     })
     .from(adjudicationResults)
     .innerJoin(claimLineItems, eq(adjudicationResults.lineItemId, claimLineItems.id))
@@ -27,13 +27,13 @@ export async function computePriorUsage(
         eq(claims.memberId, memberId),
         sql`EXTRACT(YEAR FROM ${adjudicationResults.adjudicatedAt}) = ${year}`
       )
-    )
+    );
 
   return rows.reduce<PriorUsage>(
     (acc, row) => ({
       annualUsageCents: acc.annualUsageCents + row.approvedAmountCents,
-      deductiblePaidCents: acc.deductiblePaidCents + row.deductibleAppliedCents
+      deductiblePaidCents: acc.deductiblePaidCents + row.deductibleAppliedCents,
     }),
     { annualUsageCents: 0, deductiblePaidCents: 0 }
-  )
+  );
 }

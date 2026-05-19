@@ -53,6 +53,7 @@ Claim status is derived from line item statuses — it is never set directly exc
 ```
 
 **Transitions:**
+
 - `submitted → under_review` — any line item exceeded the review threshold
 - `submitted → approved | partially_approved | denied` — adjudication completes without review
 - `approved | partially_approved | denied → disputed` — member opens a dispute on a line item
@@ -65,14 +66,14 @@ Claim status is derived from line item statuses — it is never set directly exc
 
 Given the set of line item statuses:
 
-| Line item statuses                          | Derived claim status   |
-|---------------------------------------------|------------------------|
-| Any `needs_review`                          | `under_review`         |
-| All `covered`                               | `approved`             |
-| All `denied`                                | `denied`               |
-| Mix of `covered`/`denied`, or any `partially_covered` | `partially_approved` |
-| Empty array                                 | throws `CLAIM_HAS_NO_LINE_ITEMS` |
-| Any `pending`                               | throws `LINE_ITEMS_NOT_YET_ADJUDICATED` |
+| Line item statuses                                    | Derived claim status                    |
+| ----------------------------------------------------- | --------------------------------------- |
+| Any `needs_review`                                    | `under_review`                          |
+| All `covered`                                         | `approved`                              |
+| All `denied`                                          | `denied`                                |
+| Mix of `covered`/`denied`, or any `partially_covered` | `partially_approved`                    |
+| Empty array                                           | throws `CLAIM_HAS_NO_LINE_ITEMS`        |
+| Any `pending`                                         | throws `LINE_ITEMS_NOT_YET_ADJUDICATED` |
 
 ---
 
@@ -124,6 +125,7 @@ Step 6: ANNUAL_LIMIT
 ```
 
 After steps 3–6, `lineItemStatus` is derived:
+
 - `denied` if approved = $0
 - `partially_covered` if a capacity constraint (DEDUCTIBLE, CAP, ANNUAL_LIMIT) reduced the amount
 - `covered` otherwise (only coinsurance applied — contractual, not a constraint)
@@ -138,8 +140,8 @@ The `explanationSteps` array records each rule applied with the before/after amo
 
 ```typescript
 {
-  deductiblePaidCents: number   // sum of deductible_applied_cents across active results
-  annualUsageCents:    number   // sum of approved_amount_cents across active results
+  deductiblePaidCents: number; // sum of deductible_applied_cents across active results
+  annualUsageCents: number; // sum of approved_amount_cents across active results
 }
 ```
 

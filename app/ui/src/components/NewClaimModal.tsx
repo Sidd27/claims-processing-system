@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
-import * as Dialog from '@radix-ui/react-dialog'
-import { X, Plus, Trash2 } from 'lucide-react'
-import { api, type Member, type LineItemInput } from '@/lib/api'
+import { useState, useEffect } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { X, Plus, Trash2 } from 'lucide-react';
+import { api, type Member, type LineItemInput } from '@/lib/api';
 
-const SERVICE_TYPES = ['MEDICAL', 'DENTAL', 'VISION', 'MENTAL_HEALTH', 'PRESCRIPTION'] as const
+const SERVICE_TYPES = ['MEDICAL', 'DENTAL', 'VISION', 'MENTAL_HEALTH', 'PRESCRIPTION'] as const;
 
 interface Props {
-  open: boolean
-  onClose: () => void
-  onSuccess: () => void
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
 }
 
 const emptyLineItem = (): LineItemInput => ({
@@ -16,70 +16,77 @@ const emptyLineItem = (): LineItemInput => ({
   cptCode: '',
   description: '',
   serviceDate: new Date().toISOString().split('T')[0],
-  billedAmountCents: 0
-})
+  billedAmountCents: 0,
+});
 
 export function NewClaimModal({ open, onClose, onSuccess }: Props) {
-  const [members, setMembers] = useState<Member[]>([])
-  const [memberId, setMemberId] = useState('')
-  const [providerName, setProviderName] = useState('')
-  const [providerNpi, setProviderNpi] = useState('')
-  const [diagnosisCode, setDiagnosisCode] = useState('')
-  const [lineItems, setLineItems] = useState<LineItemInput[]>([emptyLineItem()])
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [members, setMembers] = useState<Member[]>([]);
+  const [memberId, setMemberId] = useState('');
+  const [providerName, setProviderName] = useState('');
+  const [providerNpi, setProviderNpi] = useState('');
+  const [diagnosisCode, setDiagnosisCode] = useState('');
+  const [lineItems, setLineItems] = useState<LineItemInput[]>([emptyLineItem()]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) api.getMembers().then(setMembers).catch(() => setMembers([]))
-  }, [open])
+    if (open)
+      api
+        .getMembers()
+        .then(setMembers)
+        .catch(() => setMembers([]));
+  }, [open]);
 
   function updateLineItem(index: number, field: keyof LineItemInput, value: string | number) {
-    setLineItems(prev => prev.map((li, i) =>
-      i === index ? { ...li, [field]: value } : li
-    ))
+    setLineItems((prev) => prev.map((li, i) => (i === index ? { ...li, [field]: value } : li)));
   }
 
   function addLineItem() {
-    setLineItems(prev => [...prev, emptyLineItem()])
+    setLineItems((prev) => [...prev, emptyLineItem()]);
   }
 
   function removeLineItem(index: number) {
-    setLineItems(prev => prev.filter((_, i) => i !== index))
+    setLineItems((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setSubmitting(true)
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
     try {
-      await api.submitClaim({ memberId, providerName, providerNpi, diagnosisCode, lineItems })
-      onSuccess()
-      handleClose()
+      await api.submitClaim({ memberId, providerName, providerNpi, diagnosisCode, lineItems });
+      onSuccess();
+      handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submission failed')
+      setError(err instanceof Error ? err.message : 'Submission failed');
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
   function handleClose() {
-    setMemberId('')
-    setProviderName('')
-    setProviderNpi('')
-    setDiagnosisCode('')
-    setLineItems([emptyLineItem()])
-    setError(null)
-    onClose()
+    setMemberId('');
+    setProviderName('');
+    setProviderNpi('');
+    setDiagnosisCode('');
+    setLineItems([emptyLineItem()]);
+    setError(null);
+    onClose();
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={v => !v && handleClose()}>
+    <Dialog.Root open={open} onOpenChange={(v) => !v && handleClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl p-6 focus:outline-none">
           <div className="flex items-center justify-between mb-5">
-            <Dialog.Title className="text-lg font-semibold text-gray-900">Submit New Claim</Dialog.Title>
-            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <Dialog.Title className="text-lg font-semibold text-gray-900">
+              Submit New Claim
+            </Dialog.Title>
+            <button
+              onClick={handleClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
               <X size={20} />
             </button>
           </div>
@@ -91,12 +98,14 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
               <select
                 required
                 value={memberId}
-                onChange={e => setMemberId(e.target.value)}
+                onChange={(e) => setMemberId(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select a member…</option>
-                {members.map(m => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.externalMemberId})</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.externalMemberId})
+                  </option>
                 ))}
               </select>
             </div>
@@ -104,11 +113,13 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
             {/* Provider */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Provider Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Provider Name
+                </label>
                 <input
                   required
                   value={providerName}
-                  onChange={e => setProviderName(e.target.value)}
+                  onChange={(e) => setProviderName(e.target.value)}
                   placeholder="City Medical Center"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -118,7 +129,7 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
                 <input
                   required
                   value={providerNpi}
-                  onChange={e => setProviderNpi(e.target.value)}
+                  onChange={(e) => setProviderNpi(e.target.value)}
                   placeholder="1234567890"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -127,11 +138,13 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
 
             {/* Diagnosis */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Code (ICD-10)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Diagnosis Code (ICD-10)
+              </label>
               <input
                 required
                 value={diagnosisCode}
-                onChange={e => setDiagnosisCode(e.target.value)}
+                onChange={(e) => setDiagnosisCode(e.target.value)}
                 placeholder="J06.9"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -163,56 +176,74 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
                     )}
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Service Type</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Service Type
+                        </label>
                         <select
                           value={li.serviceType}
-                          onChange={e => updateLineItem(idx, 'serviceType', e.target.value)}
+                          onChange={(e) => updateLineItem(idx, 'serviceType', e.target.value)}
                           className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          {SERVICE_TYPES.map(st => <option key={st}>{st}</option>)}
+                          {SERVICE_TYPES.map((st) => (
+                            <option key={st}>{st}</option>
+                          ))}
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">CPT Code</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          CPT Code
+                        </label>
                         <input
                           required
                           value={li.cptCode}
-                          onChange={e => updateLineItem(idx, 'cptCode', e.target.value)}
+                          onChange={(e) => updateLineItem(idx, 'cptCode', e.target.value)}
                           placeholder="99213"
                           className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     </div>
                     <div className="mb-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Description
+                      </label>
                       <input
                         required
                         value={li.description}
-                        onChange={e => updateLineItem(idx, 'description', e.target.value)}
+                        onChange={(e) => updateLineItem(idx, 'description', e.target.value)}
                         placeholder="Office visit"
                         className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Service Date</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Service Date
+                        </label>
                         <input
                           required
                           type="date"
                           value={li.serviceDate}
-                          onChange={e => updateLineItem(idx, 'serviceDate', e.target.value)}
+                          onChange={(e) => updateLineItem(idx, 'serviceDate', e.target.value)}
                           className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Billed Amount ($)</label>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Billed Amount ($)
+                        </label>
                         <input
                           required
                           type="number"
                           min="0.01"
                           step="0.01"
                           value={li.billedAmountCents ? li.billedAmountCents / 100 : ''}
-                          onChange={e => updateLineItem(idx, 'billedAmountCents', Math.round(parseFloat(e.target.value || '0') * 100))}
+                          onChange={(e) =>
+                            updateLineItem(
+                              idx,
+                              'billedAmountCents',
+                              Math.round(parseFloat(e.target.value || '0') * 100)
+                            )
+                          }
                           placeholder="150.00"
                           className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
@@ -249,5 +280,5 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  )
+  );
 }

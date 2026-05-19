@@ -68,12 +68,8 @@
           "name": "adjudication_results_line_item_id_claim_line_items_id_fk",
           "tableFrom": "adjudication_results",
           "tableTo": "claim_line_items",
-          "columnsFrom": [
-            "line_item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["line_item_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -142,12 +138,8 @@
           "name": "claim_line_items_claim_id_claims_id_fk",
           "tableFrom": "claim_line_items",
           "tableTo": "claims",
-          "columnsFrom": [
-            "claim_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["claim_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -217,12 +209,8 @@
           "name": "claims_member_id_members_id_fk",
           "tableFrom": "claims",
           "tableTo": "members",
-          "columnsFrom": [
-            "member_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -230,12 +218,8 @@
           "name": "claims_policy_id_policies_id_fk",
           "tableFrom": "claims",
           "tableTo": "policies",
-          "columnsFrom": [
-            "policy_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["policy_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -285,12 +269,8 @@
           "name": "coverage_rules_policy_id_policies_id_fk",
           "tableFrom": "coverage_rules",
           "tableTo": "policies",
-          "columnsFrom": [
-            "policy_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["policy_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -360,12 +340,8 @@
           "name": "disputes_line_item_id_claim_line_items_id_fk",
           "tableFrom": "disputes",
           "tableTo": "claim_line_items",
-          "columnsFrom": [
-            "line_item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["line_item_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -417,9 +393,7 @@
         "members_external_member_id_unique": {
           "name": "members_external_member_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "external_member_id"
-          ]
+          "columns": ["external_member_id"]
         }
       }
     },
@@ -472,12 +446,8 @@
           "name": "policies_member_id_members_id_fk",
           "tableFrom": "policies",
           "tableTo": "members",
-          "columnsFrom": [
-            "member_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

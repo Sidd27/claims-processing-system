@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
@@ -7,6 +7,6 @@ export default defineConfig({
     testTimeout: 15000,
     hookTimeout: 15000,
     pool: 'forks',
-    poolOptions: { forks: { singleFork: true } }
-  }
-})
+    poolOptions: { forks: { singleFork: true } },
+  },
+});

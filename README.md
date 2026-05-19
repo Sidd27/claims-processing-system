@@ -39,13 +39,13 @@ The domain layer has zero imports from any layer above it. All business rules li
 
 ## Tech Stack
 
-| Layer       | Technology                              |
-|-------------|------------------------------------------|
-| Runtime     | Node.js + TypeScript (`tsx` for dev)     |
-| API server  | Fastify 4                                |
-| ORM / DB    | Drizzle ORM + PostgreSQL                 |
-| UI          | React 18 + Vite + Tailwind CSS v4 + shadcn |
-| Testing     | Vitest (unit) + Vitest (integration, real DB) |
+| Layer      | Technology                                    |
+| ---------- | --------------------------------------------- |
+| Runtime    | Node.js + TypeScript (`tsx` for dev)          |
+| API server | Fastify 4                                     |
+| ORM / DB   | Drizzle ORM + PostgreSQL                      |
+| UI         | React 18 + Vite + Tailwind CSS v4 + shadcn    |
+| Testing    | Vitest (unit) + Vitest (integration, real DB) |
 
 ---
 
@@ -128,14 +128,14 @@ disputes
 
 Coverage rules are stored as a typed JSON discriminated union in `coverage_rules.config`. Each rule applies to a specific `service_type`.
 
-| Rule type          | Effect                                                                 |
-|--------------------|------------------------------------------------------------------------|
-| `NOT_COVERED`      | Immediately denies the line item; no further rules applied             |
-| `REVIEW_THRESHOLD` | If billed > threshold, sends line item to manual review; no math       |
-| `DEDUCTIBLE`       | Member pays this amount annually before insurance pays anything        |
-| `COINSURANCE`      | Insurance pays this % of the remaining amount after the deductible     |
-| `PER_CLAIM_CAP`    | Caps the approved amount per claim for this service type               |
-| `ANNUAL_LIMIT`     | Caps total approved for this service type per calendar year            |
+| Rule type          | Effect                                                             |
+| ------------------ | ------------------------------------------------------------------ |
+| `NOT_COVERED`      | Immediately denies the line item; no further rules applied         |
+| `REVIEW_THRESHOLD` | If billed > threshold, sends line item to manual review; no math   |
+| `DEDUCTIBLE`       | Member pays this amount annually before insurance pays anything    |
+| `COINSURANCE`      | Insurance pays this % of the remaining amount after the deductible |
+| `PER_CLAIM_CAP`    | Caps the approved amount per claim for this service type           |
+| `ANNUAL_LIMIT`     | Caps total approved for this service type per calendar year        |
 
 Multiple rules can apply to the same service type on one policy (e.g. DEDUCTIBLE + COINSURANCE).
 
@@ -157,6 +157,7 @@ Rules are applied in a fixed order:
 ```
 
 After steps 3–6, `lineItemStatus` is derived:
+
 - `denied` — approved = $0
 - `partially_covered` — approved > $0 but a capacity constraint (DEDUCTIBLE, CAP, ANNUAL_LIMIT) reduced it
 - `covered` — approved > $0 with no capacity reduction (only coinsurance applied)
@@ -201,6 +202,7 @@ open → resolved (upheld | overturned)
 **Overturned** — the existing adjudication result is deactivated and a new result is created approving the full billed amount (`trigger = 'dispute_overturn'`). The line item status becomes `covered` and the claim status is re-derived.
 
 Guards:
+
 - A dispute can only be opened when the claim is in `approved`, `partially_approved`, or `denied` — not while it is `submitted`, `under_review`, `disputed`, or `paid`.
 - A line item can only have one open dispute at a time.
 - A resolved dispute cannot be resolved again.
@@ -213,21 +215,22 @@ All routes are prefixed `/api/v1`. Errors are returned as `{ error: "ERROR_CODE"
 
 ### Members
 
-| Method | Path       | Description              |
-|--------|------------|--------------------------|
+| Method | Path       | Description                        |
+| ------ | ---------- | ---------------------------------- |
 | GET    | `/members` | List all members (for UI dropdown) |
 
 ### Claims
 
-| Method | Path                   | Description                                             |
-|--------|------------------------|---------------------------------------------------------|
-| GET    | `/claims`              | List all claims, newest first                           |
-| GET    | `/claims/:id`          | Claim detail with line items and active adjudication results |
-| POST   | `/claims`              | Submit a new claim (triggers adjudication immediately)  |
-| POST   | `/claims/:id/pay`      | Mark an approved or partially_approved claim as paid    |
-| POST   | `/claims/:id/adjudicate` | Re-adjudicate a claim (manual review trigger)         |
+| Method | Path                     | Description                                                  |
+| ------ | ------------------------ | ------------------------------------------------------------ |
+| GET    | `/claims`                | List all claims, newest first                                |
+| GET    | `/claims/:id`            | Claim detail with line items and active adjudication results |
+| POST   | `/claims`                | Submit a new claim (triggers adjudication immediately)       |
+| POST   | `/claims/:id/pay`        | Mark an approved or partially_approved claim as paid         |
+| POST   | `/claims/:id/adjudicate` | Re-adjudicate a claim (manual review trigger)                |
 
 **POST `/claims` request body:**
+
 ```json
 {
   "memberId": "uuid",
@@ -247,6 +250,7 @@ All routes are prefixed `/api/v1`. Errors are returned as `{ error: "ERROR_CODE"
 ```
 
 **POST `/claims` response (201):**
+
 ```json
 {
   "claim": { "id": "...", "status": "approved", ... },
@@ -258,12 +262,13 @@ Note: the POST response contains raw line items without adjudication results. Us
 
 ### Disputes
 
-| Method | Path                                          | Description            |
-|--------|-----------------------------------------------|------------------------|
+| Method | Path                                              | Description                   |
+| ------ | ------------------------------------------------- | ----------------------------- |
 | POST   | `/claims/:claimId/line-items/:lineItemId/dispute` | Open a dispute on a line item |
-| POST   | `/disputes/:id/resolve`                       | Resolve a dispute      |
+| POST   | `/disputes/:id/resolve`                           | Resolve a dispute             |
 
 **POST `/disputes/:id/resolve` request body:**
+
 ```json
 {
   "resolution": "upheld | overturned",
@@ -309,6 +314,7 @@ npm run db:seed
 ```
 
 The seed creates:
+
 - **Alice** — MEDICAL 80% coinsurance, single claim → `approved`
 - **Bob** — MEDICAL $5,000 deductible + 80% coinsurance, $12,000 claim → `approved` (partial deductible applied)
 - **Carol** — MENTAL_HEALTH $5,000 annual limit; two claims, second hits the limit → `partially_approved`

@@ -1,91 +1,99 @@
-import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react'
-import { api, type ClaimDetail as ClaimDetailType, type LineItemWithResult } from '@/lib/api'
-import { StatusBadge } from '@/components/ui/badge'
-import { DisputeModal } from '@/components/DisputeModal'
-import { ResolveDisputeModal } from '@/components/ResolveDisputeModal'
-import { dollars, dateStr } from '@/lib/format'
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
+import { api, type ClaimDetail as ClaimDetailType, type LineItemWithResult } from '@/lib/api';
+import { StatusBadge } from '@/components/ui/badge';
+import { DisputeModal } from '@/components/DisputeModal';
+import { ResolveDisputeModal } from '@/components/ResolveDisputeModal';
+import { dollars, dateStr } from '@/lib/format';
 
 export function ClaimDetail() {
-  const { id } = useParams<{ id: string }>()
-  const [detail, setDetail] = useState<ClaimDetailType | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set())
-  const [disputeModal, setDisputeModal] = useState<{ lineItemId: string } | null>(null)
-  const [resolveModal, setResolveModal] = useState<{ disputeId: string } | null>(null)
-  const [actionPending, setActionPending] = useState(false)
+  const { id } = useParams<{ id: string }>();
+  const [detail, setDetail] = useState<ClaimDetailType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
+  const [disputeModal, setDisputeModal] = useState<{ lineItemId: string } | null>(null);
+  const [resolveModal, setResolveModal] = useState<{ disputeId: string } | null>(null);
+  const [actionPending, setActionPending] = useState(false);
 
   async function load() {
-    if (!id) return
-    setLoading(true)
-    setError(null)
+    if (!id) return;
+    setLoading(true);
+    setError(null);
     try {
-      setDetail(await api.getClaim(id))
+      setDetail(await api.getClaim(id));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load claim')
+      setError(e instanceof Error ? e.message : 'Failed to load claim');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-  useEffect(() => { load() }, [id])
+  useEffect(() => {
+    load();
+  }, [id]);
 
   async function handlePay() {
-    if (!id || !detail) return
-    setActionPending(true)
+    if (!id || !detail) return;
+    setActionPending(true);
     try {
-      await api.payClaim(id)
-      await load()
+      await api.payClaim(id);
+      await load();
     } finally {
-      setActionPending(false)
+      setActionPending(false);
     }
   }
 
   async function handleAdjudicate() {
-    if (!id) return
-    setActionPending(true)
+    if (!id) return;
+    setActionPending(true);
     try {
-      await api.adjudicateClaim(id)
-      await load()
+      await api.adjudicateClaim(id);
+      await load();
     } finally {
-      setActionPending(false)
+      setActionPending(false);
     }
   }
 
   function toggleSteps(lineItemId: string) {
-    setExpandedSteps(prev => {
-      const next = new Set(prev)
-      next.has(lineItemId) ? next.delete(lineItemId) : next.add(lineItemId)
-      return next
-    })
+    setExpandedSteps((prev) => {
+      const next = new Set(prev);
+      next.has(lineItemId) ? next.delete(lineItemId) : next.add(lineItemId);
+      return next;
+    });
   }
 
-  if (loading) return <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
-  if (error) return <div className="text-center py-16 text-red-500 text-sm">{error}</div>
-  if (!detail) return null
+  if (loading) return <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>;
+  if (error) return <div className="text-center py-16 text-red-500 text-sm">{error}</div>;
+  if (!detail) return null;
 
-  const { claim, lineItems } = detail
-  const canPay = claim.status === 'approved' || claim.status === 'partially_approved'
-  const canReview = claim.status === 'under_review'
+  const { claim, lineItems } = detail;
+  const canPay = claim.status === 'approved' || claim.status === 'partially_approved';
+  const canReview = claim.status === 'under_review';
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
-          <Link to="/" className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors">
+          <Link
+            to="/"
+            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors"
+          >
             <ArrowLeft size={14} /> All Claims
           </Link>
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-xl font-semibold text-gray-900 font-mono">{claim.id.slice(0, 8)}…</h1>
+                <h1 className="text-xl font-semibold text-gray-900 font-mono">
+                  {claim.id.slice(0, 8)}…
+                </h1>
                 <StatusBadge status={claim.status} />
               </div>
               <p className="text-sm text-gray-500">
-                {claim.providerName} · {claim.diagnosisCode} · Submitted {dateStr(claim.submittedAt)}
+                {claim.providerName} · {claim.diagnosisCode} · Submitted{' '}
+                {dateStr(claim.submittedAt)}
               </p>
             </div>
             <div className="flex gap-2">
@@ -116,7 +124,7 @@ export function ClaimDetail() {
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
             <h2 className="text-sm font-medium text-gray-700">Line Items</h2>
           </div>
-          {lineItems.map(li => (
+          {lineItems.map((li) => (
             <LineItemRow
               key={li.id}
               li={li}
@@ -148,21 +156,25 @@ export function ClaimDetail() {
         />
       )}
     </div>
-  )
+  );
 }
 
 function LineItemRow({
-  li, claimStatus, expanded, onToggle, onDispute
+  li,
+  claimStatus,
+  expanded,
+  onToggle,
+  onDispute,
 }: {
-  li: LineItemWithResult
-  claimStatus: string
-  expanded: boolean
-  onToggle: () => void
-  onDispute: () => void
+  li: LineItemWithResult;
+  claimStatus: string;
+  expanded: boolean;
+  onToggle: () => void;
+  onDispute: () => void;
 }) {
-  const result = li.adjudicationResult
-  const DISPUTABLE = ['approved', 'partially_approved', 'denied']
-  const canDispute = DISPUTABLE.includes(claimStatus)
+  const result = li.adjudicationResult;
+  const DISPUTABLE = ['approved', 'partially_approved', 'denied'];
+  const canDispute = DISPUTABLE.includes(claimStatus);
 
   return (
     <div className="border-b border-gray-100 last:border-0">
@@ -189,8 +201,11 @@ function LineItemRow({
 
         {result && result.reductionReasons.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
-            {result.reductionReasons.map(r => (
-              <span key={r} className="text-xs bg-red-50 text-red-600 px-1.5 py-0.5 rounded font-mono">
+            {result.reductionReasons.map((r) => (
+              <span
+                key={r}
+                className="text-xs bg-red-50 text-red-600 px-1.5 py-0.5 rounded font-mono"
+              >
                 {r}
               </span>
             ))}
@@ -206,7 +221,9 @@ function LineItemRow({
               {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
               {expanded ? 'Hide' : 'Show'} explanation steps
             </button>
-          ) : <div />}
+          ) : (
+            <div />
+          )}
           {canDispute && (
             <button
               onClick={onDispute}
@@ -220,7 +237,10 @@ function LineItemRow({
         {expanded && result && result.explanationSteps.length > 0 && (
           <div className="mt-3 space-y-1.5">
             {result.explanationSteps.map((step, i) => (
-              <div key={i} className="flex items-start gap-3 bg-gray-50 rounded-lg px-3 py-2 text-xs">
+              <div
+                key={i}
+                className="flex items-start gap-3 bg-gray-50 rounded-lg px-3 py-2 text-xs"
+              >
                 <span className="font-mono text-gray-500 shrink-0 pt-0.5">{step.rule}</span>
                 <span className="text-gray-600 flex-1">{step.description}</span>
                 <span className="text-gray-400 shrink-0 font-mono">
@@ -232,5 +252,5 @@ function LineItemRow({
         )}
       </div>
     </div>
-  )
+  );
 }

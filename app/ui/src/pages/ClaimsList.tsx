@@ -1,26 +1,28 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Plus, RefreshCw } from 'lucide-react'
-import { api, type Claim } from '@/lib/api'
-import { StatusBadge } from '@/components/ui/badge'
-import { NewClaimModal } from '@/components/NewClaimModal'
-import { dateStr } from '@/lib/format'
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Plus, RefreshCw } from 'lucide-react';
+import { api, type Claim } from '@/lib/api';
+import { StatusBadge } from '@/components/ui/badge';
+import { NewClaimModal } from '@/components/NewClaimModal';
+import { dateStr } from '@/lib/format';
 
 export function ClaimsList() {
-  const [claims, setClaims] = useState<Claim[]>([])
-  const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
 
   async function load() {
-    setLoading(true)
+    setLoading(true);
     try {
-      setClaims(await api.getClaims())
+      setClaims(await api.getClaims());
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,14 +73,22 @@ export function ClaimsList() {
               </thead>
               <tbody>
                 {claims.map((claim, i) => (
-                  <tr key={claim.id} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${i === claims.length - 1 ? 'border-0' : ''}`}>
+                  <tr
+                    key={claim.id}
+                    className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${i === claims.length - 1 ? 'border-0' : ''}`}
+                  >
                     <td className="px-4 py-3">
-                      <Link to={`/claims/${claim.id}`} className="font-mono text-xs text-blue-600 hover:underline">
+                      <Link
+                        to={`/claims/${claim.id}`}
+                        className="font-mono text-xs text-blue-600 hover:underline"
+                      >
                         {claim.id.slice(0, 8)}…
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-gray-700">{claim.providerName}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-500">{claim.diagnosisCode}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-gray-500">
+                      {claim.diagnosisCode}
+                    </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={claim.status} />
                     </td>
@@ -91,11 +101,7 @@ export function ClaimsList() {
         )}
       </div>
 
-      <NewClaimModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSuccess={load}
-      />
+      <NewClaimModal open={modalOpen} onClose={() => setModalOpen(false)} onSuccess={load} />
     </div>
-  )
+  );
 }
