@@ -4,7 +4,7 @@
 
 ## 1. Coverage rules as typed JSON (`CoverageRuleConfig` discriminated union) vs hardcoded logic
 
-**Decision:** Rules are stored as a typed JSON discriminated union in `coverage_rules.config` (jsonb column). Each row is `{ type: 'COINSURANCE', coveragePercent: 0.8 }` or `{ type: 'DEDUCTIBLE', deductibleCents: 500000 }`, etc.
+**Decision:** Rules are stored as a typed JSON discriminated union in `coverage_rules.config` (jsonb column). Each row is `{ type: 'COINSURANCE', coveragePercent: 0.8 }` or `{ type: 'DEDUCTIBLE', deductibleAmount: 500000 }`, etc.
 
 **Why not hardcoded logic per plan?**
 Hardcoded plan logic (e.g. `if planName === 'Premier PPO' apply 80%`) couples business rules to application code — adding a new plan requires a code change and deploy. JSON rules let policy configuration live in the database, where it can be managed independently.
@@ -27,14 +27,14 @@ A configurable execution order would be powerful but adds significant complexity
 
 ---
 
-## 3. `deductibleAppliedCents` stored as a column on `adjudication_results`
+## 3. `deductibleAppliedAmount` stored as a column on `adjudication_results`
 
 **Decision:** The amount applied to the member's deductible is stored on each adjudication result rather than derived by back-calculating from approved amounts.
 
 **Why not derive it?**
-`deductibleAppliedCents` cannot be reliably derived from the approved amount. Consider a $300 claim against a $500 deductible with 80% coinsurance: the deductible absorbs the full $300 (leaving $0 for coinsurance), so approved = $0. But a $700 claim against the same deductible also results in $0 approved if the entire billed amount is absorbed. Knowing only the approved amount does not tell you how much of the deductible was consumed.
+`deductibleAppliedAmount` cannot be reliably derived from the approved amount. Consider a $300 claim against a $500 deductible with 80% coinsurance: the deductible absorbs the full $300 (leaving $0 for coinsurance), so approved = $0. But a $700 claim against the same deductible also results in $0 approved if the entire billed amount is absorbed. Knowing only the approved amount does not tell you how much of the deductible was consumed.
 
-Storing it explicitly makes `computePriorUsage` a simple aggregation (`SUM(deductible_applied_cents)`) rather than a multi-step reconstruction.
+Storing it explicitly makes `computePriorUsage` a simple aggregation (`SUM(deductible_applied_amount)`) rather than a multi-step reconstruction.
 
 **Tradeoff:** A slight denormalization — the deductible applied is technically derivable from the inputs if you re-run the adjudicator. But re-running the adjudicator to compute prior usage would require prior usage, creating a circular dependency. The column resolves this cleanly.
 

@@ -32,6 +32,6 @@ export interface ClaimLineItem {
   cptCode: string;
   description: string;
   serviceDate: string;
-  billedAmountCents: number;
+  billedAmount: number;
   status: LineItemStatus;
 }

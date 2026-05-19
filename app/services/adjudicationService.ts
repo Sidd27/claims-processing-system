@@ -33,8 +33,8 @@ export async function adjudicateClaim(claimId: string, trigger: AdjudicationTrig
         await createAdjudicationResult(
           {
             lineItemId: li.id,
-            approvedAmountCents: output.approvedAmountCents,
-            deductibleAppliedCents: output.deductibleAppliedCents,
+            approvedAmount: output.approvedAmount,
+            deductibleAppliedAmount: output.deductibleAppliedAmount,
             reductionReasons: output.reductionReasons,
             explanationSteps: output.explanationSteps,
             trigger,

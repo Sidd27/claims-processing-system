@@ -12,7 +12,7 @@ export interface CreateLineItemInput {
   cptCode: string;
   description: string;
   serviceDate: string;
-  billedAmountCents: number;
+  billedAmount: number;
 }
 
 export async function getLineItem(lineItemId: string, dbClient: DbClient = db): Promise<ClaimLineItem | null> {
@@ -43,7 +43,7 @@ function mapToLineItem(row: typeof claimLineItems.$inferSelect): ClaimLineItem {
     cptCode: row.cptCode,
     description: row.description,
     serviceDate: row.serviceDate,
-    billedAmountCents: row.billedAmountCents,
+    billedAmount: row.billedAmount,
     status: row.status as LineItemStatus,
   };
 }

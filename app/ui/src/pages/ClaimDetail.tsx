@@ -183,9 +183,9 @@ function LineItemRow({
           </div>
           <div className="text-right shrink-0">
             <div className="text-sm font-medium text-foreground">
-              {result ? dollars(result.approvedAmountCents) : '—'} approved
+              {result ? dollars(result.approvedAmount) : '—'} approved
             </div>
-            <div className="text-xs text-muted-foreground">{dollars(li.billedAmountCents)} billed</div>
+            <div className="text-xs text-muted-foreground">{dollars(li.billedAmount)} billed</div>
           </div>
         </div>
 

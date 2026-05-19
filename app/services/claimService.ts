@@ -19,7 +19,7 @@ export interface SubmitClaimInput {
     cptCode: string;
     description: string;
     serviceDate: string;
-    billedAmountCents: number;
+    billedAmount: number;
   }>;
 }
 

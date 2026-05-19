@@ -45,8 +45,8 @@ export interface Claim {
 export interface AdjudicationResult {
   id: string;
   lineItemId: string;
-  approvedAmountCents: number;
-  deductibleAppliedCents: number;
+  approvedAmount: number;
+  deductibleAppliedAmount: number;
   reductionReasons: string[];
   explanationSteps: {
     rule: string;
@@ -66,7 +66,7 @@ export interface LineItemWithResult {
   cptCode: string;
   description: string;
   serviceDate: string;
-  billedAmountCents: number;
+  billedAmount: number;
   status: string;
   adjudicationResult: AdjudicationResult | null;
 }
@@ -92,7 +92,7 @@ export interface LineItemInput {
   cptCode: string;
   description: string;
   serviceDate: string;
-  billedAmountCents: number;
+  billedAmount: number;
 }
 
 export interface SubmitClaimBody {

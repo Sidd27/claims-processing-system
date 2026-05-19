@@ -7,8 +7,8 @@ type DbClient = typeof db;
 
 export interface CreateAdjudicationResultInput {
   lineItemId: string;
-  approvedAmountCents: number;
-  deductibleAppliedCents: number;
+  approvedAmount: number;
+  deductibleAppliedAmount: number;
   reductionReasons: ReductionReason[];
   explanationSteps: ExplanationStep[];
   trigger: AdjudicationTrigger;

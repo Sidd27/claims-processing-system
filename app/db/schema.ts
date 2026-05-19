@@ -53,7 +53,7 @@ export const claimLineItems = pgTable('claim_line_items', {
   cptCode: text('cpt_code').notNull(),
   description: text('description').notNull(),
   serviceDate: date('service_date').notNull(),
-  billedAmountCents: integer('billed_amount_cents').notNull(),
+  billedAmount: integer('billed_amount').notNull(),
   status: text('status').notNull().default('pending'),
 });
 
@@ -62,8 +62,8 @@ export const adjudicationResults = pgTable('adjudication_results', {
   lineItemId: uuid('line_item_id')
     .notNull()
     .references(() => claimLineItems.id),
-  approvedAmountCents: integer('approved_amount_cents').notNull(),
-  deductibleAppliedCents: integer('deductible_applied_cents').notNull().default(0),
+  approvedAmount: integer('approved_amount').notNull(),
+  deductibleAppliedAmount: integer('deductible_applied_amount').notNull().default(0),
   reductionReasons: jsonb('reduction_reasons').notNull().default([]),
   explanationSteps: jsonb('explanation_steps').notNull().default([]),
   isActive: boolean('is_active').notNull().default(true),

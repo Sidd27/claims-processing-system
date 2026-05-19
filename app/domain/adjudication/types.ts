@@ -19,8 +19,8 @@ export interface ExplanationStep {
 export type AdjudicationOutput =
   | {
       outcome: 'complete';
-      approvedAmountCents: number;
-      deductibleAppliedCents: number;
+      approvedAmount: number;
+      deductibleAppliedAmount: number;
       lineItemStatus: 'covered' | 'partially_covered' | 'denied';
       reductionReasons: ReductionReason[];
       explanationSteps: ExplanationStep[];
@@ -32,6 +32,6 @@ export type AdjudicationOutput =
     };
 
 export interface PriorUsage {
-  deductiblePaidCents: number;
-  annualUsageCents: number;
+  deductiblePaidAmount: number;
+  annualUsageAmount: number;
 }

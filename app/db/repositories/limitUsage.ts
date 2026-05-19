@@ -14,8 +14,8 @@ export async function computePriorUsage(
 ): Promise<PriorUsage> {
   const rows = await dbClient
     .select({
-      approvedAmountCents: adjudicationResults.approvedAmountCents,
-      deductibleAppliedCents: adjudicationResults.deductibleAppliedCents,
+      approvedAmount: adjudicationResults.approvedAmount,
+      deductibleAppliedAmount: adjudicationResults.deductibleAppliedAmount,
     })
     .from(adjudicationResults)
     .innerJoin(claimLineItems, eq(adjudicationResults.lineItemId, claimLineItems.id))
@@ -31,9 +31,9 @@ export async function computePriorUsage(
 
   return rows.reduce<PriorUsage>(
     (acc, row) => ({
-      annualUsageCents: acc.annualUsageCents + row.approvedAmountCents,
-      deductiblePaidCents: acc.deductiblePaidCents + row.deductibleAppliedCents,
+      annualUsageAmount: acc.annualUsageAmount + row.approvedAmount,
+      deductiblePaidAmount: acc.deductiblePaidAmount + row.deductibleAppliedAmount,
     }),
-    { annualUsageCents: 0, deductiblePaidCents: 0 }
+    { annualUsageAmount: 0, deductiblePaidAmount: 0 }
   );
 }

@@ -63,7 +63,7 @@ async function seed() {
       policyId: bobPolicy.id,
       serviceType: 'MEDICAL',
       ruleType: 'DEDUCTIBLE',
-      config: { type: 'DEDUCTIBLE', deductibleCents: 500000 },
+      config: { type: 'DEDUCTIBLE', deductibleAmount: 500000 },
     },
     {
       policyId: bobPolicy.id,
@@ -77,7 +77,7 @@ async function seed() {
       policyId: carolPolicy.id,
       serviceType: 'MENTAL_HEALTH',
       ruleType: 'ANNUAL_LIMIT',
-      config: { type: 'ANNUAL_LIMIT', limitCents: 500000 },
+      config: { type: 'ANNUAL_LIMIT', limitAmount: 500000 },
     },
     {
       policyId: carolPolicy.id,
@@ -91,7 +91,7 @@ async function seed() {
       policyId: davePolicy.id,
       serviceType: 'DENTAL',
       ruleType: 'PER_CLAIM_CAP',
-      config: { type: 'PER_CLAIM_CAP', capCents: 30000 },
+      config: { type: 'PER_CLAIM_CAP', capAmount: 30000 },
     },
     {
       policyId: davePolicy.id,
@@ -129,7 +129,7 @@ async function seed() {
         cptCode: '90837',
         description: 'Individual therapy — prior session block',
         serviceDate: '2026-01-15',
-        billedAmountCents: 562500, // $5,625 billed; 80% = $4,500 approved (within $5,000 limit)
+        billedAmount: 562500, // $5,625 billed; 80% = $4,500 approved (within $5,000 limit)
       },
     ],
   });
@@ -148,7 +148,7 @@ async function seed() {
         cptCode: '99213',
         description: 'Office visit — upper respiratory infection',
         serviceDate: '2026-03-10',
-        billedAmountCents: 25000, // $250 billed; 80% = $200 approved
+        billedAmount: 25000, // $250 billed; 80% = $200 approved
       },
     ],
   });
@@ -168,7 +168,7 @@ async function seed() {
         cptCode: '27447',
         description: 'Total knee replacement',
         serviceDate: '2026-04-02',
-        billedAmountCents: 1200000, // $12,000 billed; -$5,000 deductible = $7,000; 80% = $5,600 approved
+        billedAmount: 1200000, // $12,000 billed; -$5,000 deductible = $7,000; 80% = $5,600 approved
       },
     ],
   });
@@ -188,7 +188,7 @@ async function seed() {
         cptCode: '90837',
         description: 'Individual therapy — follow-up sessions',
         serviceDate: '2026-05-10',
-        billedAmountCents: 100000, // $1,000 billed; only $500 remaining on limit; 80% of $500 = $400 approved
+        billedAmount: 100000, // $1,000 billed; only $500 remaining on limit; 80% of $500 = $400 approved
       },
     ],
   });
@@ -208,7 +208,7 @@ async function seed() {
         cptCode: 'D2750',
         description: 'Crown — posterior tooth',
         serviceDate: '2026-05-14',
-        billedAmountCents: 80000, // $800 billed; capped at $300; 80% of $300 = $240 approved
+        billedAmount: 80000, // $800 billed; capped at $300; 80% of $300 = $240 approved
       },
     ],
   });
@@ -242,7 +242,7 @@ async function seed() {
         cptCode: '92004',
         description: 'Comprehensive eye exam',
         serviceDate: '2026-05-19',
-        billedAmountCents: 15000, // $150 billed; VISION not covered → $0 approved
+        billedAmount: 15000, // $150 billed; VISION not covered → $0 approved
       },
     ],
   });

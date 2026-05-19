@@ -51,15 +51,15 @@ export async function resolveDispute(disputeId: string, resolution: DisputeResol
       await createAdjudicationResult(
         {
           lineItemId: lineItem.id,
-          approvedAmountCents: lineItem.billedAmountCents,
-          deductibleAppliedCents: 0,
+          approvedAmount: lineItem.billedAmount,
+          deductibleAppliedAmount: 0,
           reductionReasons: [],
           explanationSteps: [
             {
               rule: 'DISPUTE_OVERTURN',
               description: `Dispute resolved in member's favor. Full billed amount approved.`,
-              amountBefore: lineItem.billedAmountCents,
-              amountAfter: lineItem.billedAmountCents,
+              amountBefore: lineItem.billedAmount,
+              amountAfter: lineItem.billedAmount,
             },
           ],
           trigger: 'dispute_overturn',

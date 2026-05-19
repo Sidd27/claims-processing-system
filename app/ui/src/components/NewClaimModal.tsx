@@ -17,7 +17,7 @@ const emptyLineItem = (): LineItemInput => ({
   cptCode: '',
   description: '',
   serviceDate: new Date().toISOString().split('T')[0],
-  billedAmountCents: 0,
+  billedAmount: 0,
 });
 
 export function NewClaimModal({ open, onClose, onSuccess }: Props) {
@@ -210,9 +210,9 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
                         type="number"
                         min="0.01"
                         step="0.01"
-                        value={li.billedAmountCents ? li.billedAmountCents / 100 : ''}
+                        value={li.billedAmount ? li.billedAmount / 100 : ''}
                         onChange={(e) =>
-                          updateLineItem(idx, 'billedAmountCents', Math.round(parseFloat(e.target.value || '0') * 100))
+                          updateLineItem(idx, 'billedAmount', Math.round(parseFloat(e.target.value || '0') * 100))
                         }
                         placeholder="150.00"
                         className="w-full border border-border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background"

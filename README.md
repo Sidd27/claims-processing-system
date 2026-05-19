@@ -109,10 +109,10 @@ claims
 
 claim_line_items
   id, claim_id → claims, service_type, cpt_code, description, service_date,
-  billed_amount_cents, status
+  billed_amount, status
 
 adjudication_results
-  id, line_item_id → claim_line_items, approved_amount_cents, deductible_applied_cents,
+  id, line_item_id → claim_line_items, approved_amount, deductible_applied_amount,
   reduction_reasons (jsonb), explanation_steps (jsonb), is_active, trigger, adjudicated_at
 
 disputes
@@ -150,7 +150,7 @@ Rules are applied in a fixed order:
 ```
 1. NOT_COVERED         → short-circuit: approved = $0, status = denied
 2. REVIEW_THRESHOLD    → short-circuit: outcome = needs_review (no approved amount set)
-3. DEDUCTIBLE          → reduce billed by remaining deductible (tracked via deductibleAppliedCents)
+3. DEDUCTIBLE          → reduce billed by remaining deductible (tracked via deductibleAppliedAmount)
 4. COINSURANCE         → multiply remainder by coverage percent
 5. PER_CLAIM_CAP       → cap approved at policy maximum for this service type
 6. ANNUAL_LIMIT        → cap at remaining annual benefit; $0 if exhausted
@@ -243,7 +243,7 @@ All routes are prefixed `/api/v1`. Errors are returned as `{ error: "ERROR_CODE"
       "cptCode": "string",
       "description": "string",
       "serviceDate": "YYYY-MM-DD",
-      "billedAmountCents": 25000
+      "billedAmount": 25000
     }
   ]
 }
@@ -361,7 +361,7 @@ Integration tests (`app/api/claims.integration.test.ts`) exercise the full HTTP 
 3. Dispute upheld leaves claim status unchanged
 4. Only active adjudication results count toward prior usage
 5. Multi-line-item claim with mixed outcomes (`partially_approved`)
-6. Deductible carries across claims via `deductibleAppliedCents`
+6. Deductible carries across claims via `deductibleAppliedAmount`
 7. Pay guard rejects `denied` and `under_review` claims with `CLAIM_NOT_PAYABLE`
 8. Dispute can be opened on a covered line item in an approved claim
 
@@ -371,7 +371,7 @@ Integration tests (`app/api/claims.integration.test.ts`) exercise the full HTTP 
 
 **Pure domain layer.** The adjudicator is a pure function. It takes in a line item, rules, and prior usage, and returns an output. This makes the entire adjudication pipeline unit-testable without a database and keeps business rules isolated from infrastructure concerns.
 
-**`deductibleAppliedCents` stored per result.** The deductible paid toward a member's annual deductible is stored on each adjudication result rather than computed from approved amounts. This allows accurate carry-forward calculation even when partial deductibles are applied (e.g. a $300 claim against a $500 deductible). `computePriorUsage` sums `deductible_applied_cents` across active results for the member/year.
+**`deductibleAppliedAmount` stored per result.** The deductible paid toward a member's annual deductible is stored on each adjudication result rather than computed from approved amounts. This allows accurate carry-forward calculation even when partial deductibles are applied (e.g. a $300 claim against a $500 deductible). `computePriorUsage` sums `deductible_applied_amount` across active results for the member/year.
 
 **`is_active` flag instead of deleting results.** When a dispute is overturned or a claim is re-adjudicated, old results are deactivated rather than deleted. This preserves a complete audit trail and ensures the prior usage query remains correct by filtering `is_active = true`.
 

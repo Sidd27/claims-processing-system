@@ -107,19 +107,19 @@ Step 2: REVIEW_THRESHOLD
     outcome = needs_review (no approved amount). STOP.
 
 Step 3: DEDUCTIBLE
-  → remaining = deductibleCents - priorUsage.deductiblePaidCents
+  → remaining = deductibleAmount - priorUsage.deductiblePaidAmount
   → applied   = min(remaining, billed)
   → current  -= applied
-  → deductibleAppliedCents = applied  (stored on the result for future carry-forward)
+  → deductibleAppliedAmount = applied  (stored on the result for future carry-forward)
 
 Step 4: COINSURANCE
   → current = round(current × coveragePercent)
 
 Step 5: PER_CLAIM_CAP
-  → if current > capCents: current = capCents
+  → if current > capAmount: current = capAmount
 
 Step 6: ANNUAL_LIMIT
-  → remaining = limitCents - priorUsage.annualUsageCents
+  → remaining = limitAmount - priorUsage.annualUsageAmount
   → if remaining ≤ 0:  current = 0            (ANNUAL_LIMIT_EXHAUSTED)
   → if remaining < current: current = remaining (ANNUAL_LIMIT_PARTIAL)
 ```
@@ -140,8 +140,8 @@ The `explanationSteps` array records each rule applied with the before/after amo
 
 ```typescript
 {
-  deductiblePaidCents: number; // sum of deductible_applied_cents across active results
-  annualUsageCents: number; // sum of approved_amount_cents across active results
+  deductiblePaidAmount: number; // sum of deductible_applied_amount across active results
+  annualUsageAmount: number; // sum of approved_amount across active results
 }
 ```
 

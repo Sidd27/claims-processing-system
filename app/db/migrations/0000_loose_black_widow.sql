@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS "adjudication_results" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"line_item_id" uuid NOT NULL,
-	"approved_amount_cents" integer NOT NULL,
+	"approved_amount" integer NOT NULL,
 	"reduction_reasons" jsonb DEFAULT '[]'::jsonb NOT NULL,
 	"explanation_steps" jsonb DEFAULT '[]'::jsonb NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS "claim_line_items" (
 	"cpt_code" text NOT NULL,
 	"description" text NOT NULL,
 	"service_date" date NOT NULL,
-	"billed_amount_cents" integer NOT NULL,
+	"billed_amount" integer NOT NULL,
 	"status" text DEFAULT 'pending' NOT NULL
 );
 --> statement-breakpoint
