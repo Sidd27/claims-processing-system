@@ -4,7 +4,7 @@
 
 ## 1. Coverage rules as typed JSON (`CoverageRuleConfig` discriminated union) vs hardcoded logic
 
-**Decision:** Rules are stored as a typed JSON discriminated union in `coverage_rules.config` (jsonb column). Each row is `{ type: 'COINSURANCE', coveragePercent: 0.8 }` or `{ type: 'DEDUCTIBLE', deductibleAmount: 500000 }`, etc.
+**Decision:** Rules are stored as a typed JSON discriminated union in `coverage_rules.config` (jsonb column). Each row is `{ type: 'COINSURANCE', coveragePercent: 0.8 }` or `{ type: 'DEDUCTIBLE', deductibleAmount: 5000 }`, etc.
 
 **Why not hardcoded logic per plan?**
 Hardcoded plan logic (e.g. `if planName === 'Premier PPO' apply 80%`) couples business rules to application code — adding a new plan requires a code change and deploy. JSON rules let policy configuration live in the database, where it can be managed independently.
@@ -97,3 +97,16 @@ Re-running the pipeline on overturn would re-apply deductibles, caps, and annual
 The assignment required demonstrating the full dispute lifecycle including resolution. Showing it in the UI makes the capability visible and testable without requiring a separate admin interface to be built.
 
 **How it works:** The detail page fetches the open dispute for each line item alongside the adjudication result. If a line item has an open dispute, the "Resolve Dispute" button appears. The member-facing "Open Dispute" button and the ops-facing "Resolve Dispute" button are shown in the same row but are logically separate actions.
+
+---
+
+## 9. Only `partially_approved` and `denied` claims are disputable
+
+**Decision:** A dispute can only be opened when the claim is in `partially_approved` or `denied` status. `approved` claims cannot be disputed.
+
+**Why not allow disputes on `approved` claims?**
+An `approved` claim means every line item was covered in full (only coinsurance applied — a contractual reduction, not a denial or cap). There is nothing to dispute: the member received full coverage. Allowing disputes on approved claims would open a path to approve amounts beyond what the plan covers, which has no legitimate use case.
+
+`partially_approved` and `denied` claims have line items where coverage was reduced or refused — these are the decisions a member might legitimately challenge.
+
+**Where it lives:** `DISPUTABLE_STATES` is defined in `app/domain/constants.ts` (shared between `stateMachine.ts` and `disputeLogic.ts`) so both the state transition guard and the dispute open guard draw from the same source of truth.

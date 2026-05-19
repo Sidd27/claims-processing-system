@@ -1,11 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  deriveClaimStatus,
-  assertValidTransition,
-  assertCanFlagForReview,
-  DISPUTABLE_STATES,
-  PAYABLE_STATES,
-} from './stateMachine';
+import { deriveClaimStatus, assertValidTransition, assertCanFlagForReview } from './stateMachine';
+import { DISPUTABLE_STATES, PAYABLE_STATES } from '../constants';
 import { DomainError } from '../errors';
 
 function catchCode(fn: () => void): string {

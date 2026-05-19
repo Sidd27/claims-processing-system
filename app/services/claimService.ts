@@ -6,7 +6,8 @@ import { getMember } from '../db/repositories/members';
 import { getActiveResult } from '../db/repositories/adjudicationResults';
 import { getDisputesByLineItemId } from '../db/repositories/disputes';
 import { adjudicateClaim } from './adjudicationService';
-import { assertValidTransition, PAYABLE_STATES } from '../domain/claims/stateMachine';
+import { assertValidTransition } from '../domain/claims/stateMachine';
+import { PAYABLE_STATES } from '../domain/constants';
 import { DomainError } from '../domain/errors';
 import type { ServiceType } from '../domain/policies/types';
 

@@ -55,6 +55,7 @@ The domain layer has zero imports from any layer above it. All business rules li
 app/
 ├── domain/
 │   ├── errors.ts                   # DomainError class (code + message)
+│   ├── constants.ts                # DISPUTABLE_STATES, PAYABLE_STATES (shared across claims + disputes)
 │   ├── policies/types.ts           # ServiceType, CoverageRuleConfig, CoverageRule
 │   ├── claims/
 │   │   ├── types.ts                # Claim, ClaimLineItem, ClaimStatus, LineItemStatus
@@ -171,13 +172,13 @@ The `adjudicateClaim` service function runs the pipeline for each pending/needs_
 ## Claim Status State Machine
 
 ```
-submitted → under_review
-submitted → approved | partially_approved | denied
-approved  → disputed | paid
+submitted          → under_review
+submitted          → approved | partially_approved | denied
+approved           → paid
 partially_approved → disputed | paid
-denied    → disputed
-disputed  → approved | partially_approved | denied   (after dispute resolves)
-paid      ← terminal, no further transitions
+denied             → disputed
+disputed           → approved | partially_approved | denied   (after dispute resolves)
+paid               ← terminal, no further transitions
 ```
 
 `deriveClaimStatus` drives all transitions except `paid`. It looks at the current line item statuses:

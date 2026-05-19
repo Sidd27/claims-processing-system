@@ -26,37 +26,35 @@ A **dispute** belongs to a line item (not the claim). This allows disputing a si
 Claim status is derived from line item statuses — it is never set directly except for the terminal `paid` transition.
 
 ```
-                  ┌────────────────────────────────────────────┐
-                  │                                            │
-              submitted                                        │
-                  │                                            │
-       ┌──────────┼──────────────┐                            │
-       ▼          ▼              ▼                            │
-  under_review  approved   partially_approved   denied         │
-       │          │              │                │           │
-       │          └──────────────┼────────────────┘           │
-       │                         │                            │
-       │                    [disputable]                      │
-       │                         │                            │
-       │                         ▼                            │
-       │                     disputed                         │
-       │                         │                            │
-       │           ┌─────────────┼─────────────┐             │
-       │           ▼             ▼              ▼             │
-       │       approved  partially_approved  denied           │
-       │           │             │                            │
-       │           └─────────────┘                            │
-       │                  │                                   │
-       │                  ▼                                   │
-       └──────────────► paid ◄──────────────────────────────┘
-                       (terminal)
+                  ┌───────────────────────────────────────────────┐
+                  │                                               │
+              submitted                                           │
+                  │                                               │
+       ┌──────────┼──────────────┐                               │
+       ▼          ▼              ▼                               │
+  under_review  approved   partially_approved   denied            │
+       │          │              │                │              │
+       │          │         [disputable]──────────┘              │
+       │          │              │                               │
+       │          │              ▼                               │
+       │          │          disputed                            │
+       │          │              │                               │
+       │          │  ┌───────────┼───────────┐                  │
+       │          │  ▼           ▼           ▼                  │
+       │          │ approved  partially_approved  denied         │
+       │          │  │           │                               │
+       │          └──┼───────────┘                               │
+       │             │                                           │
+       │             ▼                                           │
+       └──────────► paid ◄─────────────────────────────────────┘
+                   (terminal)
 ```
 
 **Transitions:**
 
 - `submitted → under_review` — any line item exceeded the review threshold
 - `submitted → approved | partially_approved | denied` — adjudication completes without review
-- `approved | partially_approved | denied → disputed` — member opens a dispute on a line item
+- `partially_approved | denied → disputed` — member opens a dispute on a line item (`approved` is not disputable — full coverage means nothing to challenge)
 - `disputed → approved | partially_approved | denied` — dispute resolved (status re-derived)
 - `approved | partially_approved → paid` — explicit pay action
 

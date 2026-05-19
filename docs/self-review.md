@@ -6,7 +6,7 @@
 - Claim status is derived from line-item statuses rather than stored independently, keeping the model consistent by design.
 - The adjudication engine uses pure functions, which makes it easy to test in isolation and reason about without side effects.
 - Dispute flow is implemented end-to-end; audit history is maintained on disputes so resolution decisions are traceable.
-- The `is_active` flag on policies handles the one-active-policy-per-member constraint cleanly without needing extra query logic.
+- The `is_active` flag on adjudication results handles re-adjudication and dispute overturn cleanly — old results are deactivated rather than deleted, which preserves audit history and keeps prior usage calculations correct.
 - Test coverage is solid for domain logic; tests focus on business rules rather than HTTP plumbing.
 - Docs cover project setup, domain model, and architectural decisions — enough context for someone picking this up cold.
 - Migrations and seeds are included so the project runs end-to-end without manual setup.

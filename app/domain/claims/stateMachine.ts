@@ -11,8 +11,6 @@ const TRANSITIONS: Record<ClaimStatus, ClaimStatus[]> = {
   disputed: ['approved', 'partially_approved', 'denied'],
 };
 
-export const DISPUTABLE_STATES: ClaimStatus[] = ['partially_approved', 'denied'];
-export const PAYABLE_STATES: ClaimStatus[] = ['approved', 'partially_approved'];
 
 export function deriveClaimStatus(statuses: LineItemStatus[]): ClaimStatus {
   if (statuses.length === 0)

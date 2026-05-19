@@ -25,8 +25,8 @@ describe('assertCanOpenDispute', () => {
     expect(() => assertCanOpenDispute('denied')).not.toThrow();
   });
 
-  it('throws CLAIM_IS_PAID_TERMINAL when claim is paid', () => {
-    expect(catchCode(() => assertCanOpenDispute('paid'))).toBe('CLAIM_IS_PAID_TERMINAL');
+  it('throws CLAIM_NOT_DISPUTABLE when claim is paid', () => {
+    expect(catchCode(() => assertCanOpenDispute('paid'))).toBe('CLAIM_NOT_DISPUTABLE');
   });
 
   it('throws CLAIM_NOT_DISPUTABLE when claim is submitted', () => {
