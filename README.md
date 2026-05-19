@@ -283,15 +283,18 @@ Note: the POST response contains raw line items without adjudication results. Us
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL 14+
+- Docker (for PostgreSQL — a `docker-compose.yml` is included)
 
 ### Setup
 
 ```bash
-# Install API dependencies
+# 1. Start PostgreSQL
+docker compose up -d
+
+# 2. Install API dependencies
 npm install
 
-# Install UI dependencies
+# 3. Install UI dependencies
 cd app/ui && npm install && cd ../..
 ```
 
@@ -300,8 +303,11 @@ cd app/ui && npm install && cd ../..
 Create a `.env` file at the project root:
 
 ```env
-DATABASE_URL=postgres://user:password@localhost:5432/claims_db
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/claims_dev
+PORT=3000
 ```
+
+`DATABASE_URL` matches the credentials in `docker-compose.yml`. If you're using your own PostgreSQL instance, update accordingly.
 
 ### Database
 
