@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Plus, RefreshCw } from 'lucide-react';
 import { api, type Claim } from '@/lib/api';
 import { StatusBadge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { NewClaimModal } from '@/components/NewClaimModal';
 import { dateStr } from '@/lib/format';
 
@@ -25,69 +27,63 @@ export function ClaimsList() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Claims</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{claims.length} claims total</p>
+            <h1 className="text-2xl font-semibold text-foreground">Claims</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">{claims.length} claims total</p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={load} className="p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Refresh">
+            <Button variant="ghost" size="icon" onClick={load} title="Refresh">
               <RefreshCw size={16} />
-            </button>
-            <button
-              onClick={() => setModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
+            </Button>
+            <Button onClick={() => setModalOpen(true)}>
               <Plus size={16} />
               Add New Claim
-            </button>
+            </Button>
           </div>
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
+          <div className="text-center py-16 text-muted-foreground text-sm">Loading…</div>
         ) : claims.length === 0 ? (
-          <div className="text-center py-16 text-gray-400 text-sm">
+          <div className="text-center py-16 text-muted-foreground text-sm">
             No claims yet.{' '}
-            <button onClick={() => setModalOpen(true)} className="text-blue-600 hover:underline">
+            <button onClick={() => setModalOpen(true)} className="text-primary hover:underline">
               Submit the first one.
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Claim ID</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Provider</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Diagnosis</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Submitted</th>
-                </tr>
-              </thead>
-              <tbody>
-                {claims.map((claim, i) => (
-                  <tr
-                    key={claim.id}
-                    className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${i === claims.length - 1 ? 'border-0' : ''}`}
-                  >
-                    <td className="px-4 py-3">
-                      <Link to={`/claims/${claim.id}`} className="font-mono text-xs text-blue-600 hover:underline">
+          <div className="rounded-xl border border-border overflow-hidden bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead>Claim ID</TableHead>
+                  <TableHead>Provider</TableHead>
+                  <TableHead>Diagnosis</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Submitted</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {claims.map((claim) => (
+                  <TableRow key={claim.id}>
+                    <TableCell>
+                      <Link to={`/claims/${claim.id}`} className="font-mono text-xs text-primary hover:underline">
                         {claim.id.slice(0, 8)}…
                       </Link>
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">{claim.providerName}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-500">{claim.diagnosisCode}</td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell className="text-foreground">{claim.providerName}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{claim.diagnosisCode}</TableCell>
+                    <TableCell>
                       <StatusBadge status={claim.status} />
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">{dateStr(claim.submittedAt)}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{dateStr(claim.submittedAt)}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>

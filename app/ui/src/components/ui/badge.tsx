@@ -1,4 +1,24 @@
+import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+
+const badgeVariants = cva(
+  'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-colors',
+  {
+    variants: {
+      variant: {
+        default: 'border-transparent bg-primary text-primary-foreground',
+        secondary: 'border-transparent bg-secondary text-secondary-foreground',
+        destructive: 'border-transparent bg-destructive/10 text-destructive',
+        outline: 'border-border text-foreground',
+      },
+    },
+    defaultVariants: { variant: 'default' },
+  }
+);
+
+function Badge({ className, variant, ...props }: React.ComponentProps<'span'> & VariantProps<typeof badgeVariants>) {
+  return <span className={cn(badgeVariants({ variant }), className)} {...props} />;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   submitted: 'bg-gray-100 text-gray-700',
@@ -16,15 +36,12 @@ const STATUS_COLORS: Record<string, string> = {
   resolved: 'bg-gray-100 text-gray-600',
 };
 
-export function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: { status: string }) {
   return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-        STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-700'
-      )}
-    >
+    <Badge variant="outline" className={cn('border-transparent', STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-700')}>
       {status.replace(/_/g, ' ')}
-    </span>
+    </Badge>
   );
 }
+
+export { Badge, badgeVariants, StatusBadge };

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { api, type Member, type LineItemInput } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const SERVICE_TYPES = ['MEDICAL', 'DENTAL', 'VISION', 'MENTAL_HEALTH', 'PRESCRIPTION'] as const;
 
@@ -74,190 +75,167 @@ export function NewClaimModal({ open, onClose, onSuccess }: Props) {
     onClose();
   }
 
+  const inputClass =
+    'w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background';
+
   return (
-    <Dialog.Root open={open} onOpenChange={(v) => !v && handleClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl p-6 focus:outline-none">
-          <div className="flex items-center justify-between mb-5">
-            <Dialog.Title className="text-lg font-semibold text-gray-900">Submit New Claim</Dialog.Title>
-            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-              <X size={20} />
-            </button>
+    <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle>Submit New Claim</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Member */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Member</label>
+            <select required value={memberId} onChange={(e) => setMemberId(e.target.value)} className={inputClass}>
+              <option value="">Select a member…</option>
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name} ({m.externalMemberId})
+                </option>
+              ))}
+            </select>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Member */}
+          {/* Provider */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Member</label>
-              <select
-                required
-                value={memberId}
-                onChange={(e) => setMemberId(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select a member…</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name} ({m.externalMemberId})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Provider */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Provider Name</label>
-                <input
-                  required
-                  value={providerName}
-                  onChange={(e) => setProviderName(e.target.value)}
-                  placeholder="City Medical Center"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Provider NPI</label>
-                <input
-                  required
-                  value={providerNpi}
-                  onChange={(e) => setProviderNpi(e.target.value)}
-                  placeholder="1234567890"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Diagnosis */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Code (ICD-10)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Provider Name</label>
               <input
                 required
-                value={diagnosisCode}
-                onChange={(e) => setDiagnosisCode(e.target.value)}
-                placeholder="J06.9"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={providerName}
+                onChange={(e) => setProviderName(e.target.value)}
+                placeholder="City Medical Center"
+                className={inputClass}
               />
             </div>
-
-            {/* Line Items */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">Line Items</label>
-                <button
-                  type="button"
-                  onClick={addLineItem}
-                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  <Plus size={14} /> Add line item
-                </button>
-              </div>
-              <div className="space-y-3">
-                {lineItems.map((li, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-3 relative">
-                    {lineItems.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeLineItem(idx)}
-                        className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors"
+              <label className="block text-sm font-medium text-gray-700 mb-1">Provider NPI</label>
+              <input
+                required
+                value={providerNpi}
+                onChange={(e) => setProviderNpi(e.target.value)}
+                placeholder="1234567890"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          {/* Diagnosis */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Code (ICD-10)</label>
+            <input
+              required
+              value={diagnosisCode}
+              onChange={(e) => setDiagnosisCode(e.target.value)}
+              placeholder="J06.9"
+              className={inputClass}
+            />
+          </div>
+
+          {/* Line Items */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Line Items</label>
+              <Button type="button" variant="ghost" size="sm" onClick={addLineItem}>
+                <Plus size={14} />
+                Add line item
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {lineItems.map((li, idx) => (
+                <div key={idx} className="border border-border rounded-lg p-3 relative">
+                  {lineItems.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => removeLineItem(idx)}
+                      className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  )}
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Service Type</label>
+                      <select
+                        value={li.serviceType}
+                        onChange={(e) => updateLineItem(idx, 'serviceType', e.target.value)}
+                        className="w-full border border-border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background"
                       >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Service Type</label>
-                        <select
-                          value={li.serviceType}
-                          onChange={(e) => updateLineItem(idx, 'serviceType', e.target.value)}
-                          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          {SERVICE_TYPES.map((st) => (
-                            <option key={st}>{st}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">CPT Code</label>
-                        <input
-                          required
-                          value={li.cptCode}
-                          onChange={(e) => updateLineItem(idx, 'cptCode', e.target.value)}
-                          placeholder="99213"
-                          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
+                        {SERVICE_TYPES.map((st) => (
+                          <option key={st}>{st}</option>
+                        ))}
+                      </select>
                     </div>
-                    <div className="mb-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">CPT Code</label>
                       <input
                         required
-                        value={li.description}
-                        onChange={(e) => updateLineItem(idx, 'description', e.target.value)}
-                        placeholder="Office visit"
-                        className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={li.cptCode}
+                        onChange={(e) => updateLineItem(idx, 'cptCode', e.target.value)}
+                        placeholder="99213"
+                        className="w-full border border-border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Service Date</label>
-                        <input
-                          required
-                          type="date"
-                          value={li.serviceDate}
-                          onChange={(e) => updateLineItem(idx, 'serviceDate', e.target.value)}
-                          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Billed Amount ($)</label>
-                        <input
-                          required
-                          type="number"
-                          min="0.01"
-                          step="0.01"
-                          value={li.billedAmountCents ? li.billedAmountCents / 100 : ''}
-                          onChange={(e) =>
-                            updateLineItem(
-                              idx,
-                              'billedAmountCents',
-                              Math.round(parseFloat(e.target.value || '0') * 100)
-                            )
-                          }
-                          placeholder="150.00"
-                          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
+                  </div>
+                  <div className="mb-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                    <input
+                      required
+                      value={li.description}
+                      onChange={(e) => updateLineItem(idx, 'description', e.target.value)}
+                      placeholder="Office visit"
+                      className="w-full border border-border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Service Date</label>
+                      <input
+                        required
+                        type="date"
+                        value={li.serviceDate}
+                        onChange={(e) => updateLineItem(idx, 'serviceDate', e.target.value)}
+                        className="w-full border border-border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Billed Amount ($)</label>
+                      <input
+                        required
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={li.billedAmountCents ? li.billedAmountCents / 100 : ''}
+                        onChange={(e) =>
+                          updateLineItem(idx, 'billedAmountCents', Math.round(parseFloat(e.target.value || '0') * 100))
+                        }
+                        placeholder="150.00"
+                        className="w-full border border-border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background"
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
+          </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">{error}</div>
-            )}
+          {error && <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>}
 
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-              >
-                {submitting ? 'Submitting…' : 'Submit Claim'}
-              </button>
-            </div>
-          </form>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? 'Submitting…' : 'Submit Claim'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
