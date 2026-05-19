@@ -34,3 +34,4 @@
 - **One active policy per member enforced in application code** — the constraint is real but not backed by a DB unique index. Chose simplicity over strictness here.
 - **Dispute overturn approves the full billed amount** — rather than re-running the adjudication pipeline with different inputs, an overturn short-circuits to full approval. Simpler to implement but not how a real payer would handle it.
 - **Built a small UI even though the assignment only required one demonstrable interface** — went further than required. In hindsight, that time would have been better spent tightening validation, prior-usage correctness, database constraints, and the manual-review and dispute edges.
+- I stored diagnosis information as standardized codes rather than free-text clinical notes. This reduces unnecessary sensitive text in the system, but the codes are still health data and would need PHI-level handling in production.
