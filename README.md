@@ -69,9 +69,10 @@ app/
 ├── db/
 │   ├── client.ts                  # Drizzle client + pg Pool
 │   ├── schema.ts                  # All Drizzle table definitions
-│   ├── seed.ts                    # Seed script (5 members covering all paths)
+│   ├── seed.ts                    # Seed script (6 members + plans + snapshot verification)
 │   └── repositories/
 │       ├── members.ts
+│       ├── plans.ts               # createPlan, listPlans, getPlanCoverageRules, setPlanCoverageRules
 │       ├── policies.ts
 │       ├── claims.ts
 │       ├── lineItems.ts
@@ -79,6 +80,7 @@ app/
 │       ├── disputes.ts
 │       └── limitUsage.ts          # computePriorUsage — aggregates active results
 ├── services/
+│   ├── planService.ts             # enrollMember — creates policy + snapshots plan rules
 │   ├── claimService.ts            # submitClaim, getClaimDetail, markClaimPaid, reAdjudicateClaim
 │   ├── adjudicationService.ts     # adjudicateClaim — runs pipeline inside a transaction
 │   └── disputeService.ts         # openDispute, resolveDispute
@@ -86,6 +88,7 @@ app/
     ├── server.ts                  # Fastify app factory, error handler, route registration
     ├── index.ts                   # Entry point (starts server)
     └── routes/
+        ├── plans.ts
         ├── claims.ts
         ├── disputes.ts
         └── members.ts
@@ -96,11 +99,17 @@ app/
 ## Data Model
 
 ```
+plans
+  id, plan_code (unique), name, description, created_at
+
+plan_coverage_rules
+  id, plan_id → plans, service_type, rule_type, config (jsonb)
+
 members
   id, external_member_id, name, date_of_birth
 
 policies
-  id, member_id → members, plan_name, effective_date, term_date
+  id, member_id → members, plan_id → plans (nullable), plan_name, effective_date, term_date
 
 coverage_rules
   id, policy_id → policies, service_type, rule_type, config (jsonb)
@@ -120,6 +129,8 @@ disputes
   id, line_item_id → claim_line_items, member_reason, status, resolution,
   resolver_note, resolved_at, created_at
 ```
+
+**Plans and snapshot enrollment** — `plans` + `plan_coverage_rules` form a reusable template catalog. When a member is enrolled via `planService.enrollMember`, all plan rules are copied into the policy's `coverage_rules`. After that point the policy's rules are frozen: plan mutations do not affect enrolled policies. `policies.plan_name` is a denormalized copy of the plan name at enrollment time for historical readability.
 
 **`adjudication_results.is_active`** — only one result per line item is active at a time. When a dispute is overturned or a claim is re-adjudicated, the old result is set `is_active = false` and a new one is inserted. Prior usage calculations (`computePriorUsage`) query only active results, so deactivated results are automatically excluded.
 
@@ -213,6 +224,15 @@ Guards:
 ## API Reference
 
 All routes are prefixed `/api/v1`. Errors are returned as `{ error: "ERROR_CODE", message: "..." }` with HTTP 422.
+
+### Plans
+
+| Method | Path              | Description                                                       |
+| ------ | ----------------- | ----------------------------------------------------------------- |
+| GET    | `/plans`          | List all plans                                                    |
+| POST   | `/plans`          | Create a plan (optionally with inline `coverageRules`)            |
+| GET    | `/plans/:id`      | Plan detail with its `coverageRules`                              |
+| PUT    | `/plans/:id/rules`| Replace a plan's coverage rules (does not affect enrolled policies)|
 
 ### Members
 
@@ -320,14 +340,15 @@ npm run db:migrate
 npm run db:seed
 ```
 
-The seed creates:
+The seed creates six named plans, enrolls members, and demonstrates all adjudication paths:
 
-- **Alice** — MEDICAL 80% coinsurance, single claim → `approved`
-- **Bob** — MEDICAL $5,000 deductible + 80% coinsurance, $12,000 claim → `approved` (partial deductible applied)
-- **Carol** — MENTAL_HEALTH $5,000 annual limit; two claims, second hits the limit → `partially_approved`
-- **Dave** — DENTAL $300 per-claim cap + 80% coinsurance; dispute opened and overturned → `approved` at full billed amount
-- **Emma** — VISION NOT_COVERED, eye exam claim → `denied`
-- **Frank** — MEDICAL $500 review threshold; $700 claim exceeds it → `under_review` (awaiting ops approve/deny)
+- **Alice** (Premier PPO) — MEDICAL 80% coinsurance, single claim → `approved`
+- **Bob** (Standard HMO) — MEDICAL $5,000 deductible + 80% coinsurance, $12,000 claim → `partially_approved`
+- **Carol** (Behavioral Plus) — MENTAL_HEALTH $5,000 annual limit; two claims, second hits the limit → `partially_approved`
+- **Dave** (Dental Select) — DENTAL $300 per-claim cap + 80% coinsurance; dispute opened and overturned → `approved`
+- **Emma** (Basic Vision Plan) — VISION NOT_COVERED, eye exam → `denied`
+- **Frank** (High-Touch Care) — MEDICAL $500 review threshold; $700 claim → `under_review`
+- **Grace** (Economy Care) — snapshot verification: enrolled at 70% coinsurance, plan updated to 50% + deductible, claim still adjudicates at 70%
 
 ### Run
 
@@ -356,7 +377,9 @@ npm run test:integration
 
 Unit tests cover `adjudicator.ts`, `stateMachine.ts`, and `disputeLogic.ts` — the entire domain layer — without any database.
 
-Integration tests (`app/api/claims.integration.test.ts`) exercise the full HTTP → service → DB → domain round-trip. Each test runs in an isolated DB state via `beforeEach(clearDb)`. The tests cover:
+Integration tests exercise the full HTTP → service → DB → domain round-trip. Each test runs in an isolated DB state via `beforeEach(clearDb)`.
+
+**`claims.integration.test.ts`** — core adjudication and dispute flows:
 
 1. Annual limit exhaustion across sequential claims
 2. Dispute overturn re-derives claim status to `approved`
@@ -365,7 +388,17 @@ Integration tests (`app/api/claims.integration.test.ts`) exercise the full HTTP 
 5. Multi-line-item claim with mixed outcomes (`partially_approved`)
 6. Deductible carries across claims via `deductibleAppliedAmount`
 7. Pay guard rejects `denied` and `under_review` claims with `CLAIM_NOT_PAYABLE`
-8. Dispute can be opened on a covered line item in an approved claim
+8. Dispute can be opened on a line item in a `partially_approved` claim
+
+**`plans.integration.test.ts`** — plans API and snapshot isolation:
+
+1. `GET /plans` — empty list; populated after creates
+2. `POST /plans` — creates without rules; creates with inline rules
+3. `GET /plans/:id` — returns plan with rules; 422 for unknown id
+4. `PUT /plans/:id/rules` — full replacement; clears to empty
+5. `enrollMember` copies plan rules into policy `coverage_rules`
+6. Updating plan rules does not change enrolled policy rules
+7. Claim adjudicates at the frozen enrollment-time rate, not the updated plan rate
 
 ---
 

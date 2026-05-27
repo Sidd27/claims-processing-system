@@ -3,9 +3,12 @@
 ## Entity Relationships
 
 ```
+plans
+  └── plan_coverage_rules (template rules; copied to policy at enrollment)
+
 members
-  └── policies (one active policy per member)
-        └── coverage_rules (one or more per policy, keyed by service_type)
+  └── policies (one active policy per member; plan_id → plans for reference)
+        └── coverage_rules (frozen snapshot of plan rules at enrollment + any per-member overrides)
 
 claims (belongs to member + policy)
   └── claim_line_items (one per billed service)
@@ -13,7 +16,9 @@ claims (belongs to member + policy)
         └── disputes (at most one open dispute per line item)
 ```
 
-A **member** has a **policy**. The policy carries **coverage rules** — one or more rules per service type (e.g. DEDUCTIBLE + COINSURANCE for MEDICAL). When a claim is submitted, each line item is adjudicated against the rules that match its `service_type`.
+A **plan** is a reusable template that defines coverage via `plan_coverage_rules`. When a **member** is enrolled, `planService.enrollMember` copies all plan rules into the policy's own `coverage_rules` (snapshot). From that point the policy's rules are frozen — plan mutations do not affect enrolled policies. Per-member rule overrides are additional rows in `coverage_rules`.
+
+The adjudicator reads `coverage_rules` by `policy_id` exactly as before; it has no knowledge of plans.
 
 An **adjudication result** belongs to a line item. Only one result is active at a time (`is_active = true`). On re-adjudication or dispute overturn, the old result is deactivated and a new one is inserted, preserving the full audit trail.
 

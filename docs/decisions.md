@@ -100,6 +100,23 @@ The assignment required demonstrating the full dispute lifecycle including resol
 
 ---
 
+## 10. Plans as reusable templates with snapshot-on-enrollment
+
+**Decision:** Insurance plans are defined once in a `plans` table with their own `plan_coverage_rules`. When a member is enrolled, all plan rules are copied ("snapshotted") into the policy's `coverage_rules`. After enrollment, the policy's rules are independent — changes to the plan do not affect already-enrolled policies.
+
+**Why not read plan rules at adjudication time?**
+If adjudication resolved rules by joining `policies → plans → plan_coverage_rules` at query time, a plan update would immediately change adjudication outcomes for all enrolled members. This is incorrect insurance behaviour: a member's coverage terms are locked at their effective date, not at the time of each claim.
+
+**Why not explicit plan versioning?**
+Versioning (each plan change creates a new version with effective/term dates) is the cleanest long-term solution but adds schema complexity: version ID foreign keys, temporal queries, and a version management UI. Snapshot-on-enrollment achieves the same correctness guarantee — old policies always have their own frozen copy of the rules — with no version management overhead. The schema does not block adding versioning later.
+
+**Why keep `policy.plan_name` as a denormalized text column?**
+Even if the plan is renamed, historical policies must remain readable. The `plan_name` on the policy records the name at enrollment time, so the claims list and detail views show the correct name regardless of plan mutations.
+
+**Per-member overrides** are additional or replacement rows in `coverage_rules` for the policy. The adjudicator sees a flat list and applies them as before — no changes to the adjudication pipeline.
+
+---
+
 ## 9. Only `partially_approved` and `denied` claims are disputable
 
 **Decision:** A dispute can only be opened when the claim is in `partially_approved` or `denied` status. `approved` claims cannot be disputed.
