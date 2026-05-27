@@ -11,7 +11,6 @@ Keep these four files in sync:
 
 ## Code conventions
 
-- All amounts stored as **integer cents** in the database. Display layer converts to dollars.
 - New DB tables go in `app/db/schema.ts`. Run `npm run db:generate` to create the migration, then manually verify the generated SQL is an incremental diff (not a full schema recreation).
 - New repositories go in `app/db/repositories/<table>.ts` — one file per table, same pattern as existing ones.
 - New services go in `app/services/<feature>Service.ts`.
