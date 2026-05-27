@@ -102,7 +102,7 @@ export function ClaimDetail() {
                 <StatusBadge status={claim.status} />
               </div>
               <p className="text-sm text-muted-foreground">
-                {claim.memberName} · {claim.providerName} · {claim.diagnosisCode} · Submitted {dateStr(claim.submittedAt)}
+                {claim.memberName} · {claim.planName} · {claim.providerName} · {claim.diagnosisCode} · Submitted {dateStr(claim.submittedAt)}
               </p>
             </div>
             <div className="flex gap-2">

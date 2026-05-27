@@ -15,6 +15,13 @@
       "when": 1779125769213,
       "tag": "0001_secret_captain_britain",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1779879563070,
+      "tag": "0002_odd_grey_gargoyle",
+      "breakpoints": true
     }
   ]
 }

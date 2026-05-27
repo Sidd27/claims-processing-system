@@ -38,6 +38,7 @@ export interface Claim {
   memberId: string;
   memberName: string;
   policyId: string;
+  planName: string;
   providerName: string;
   providerNpi: string;
   diagnosisCode: string;

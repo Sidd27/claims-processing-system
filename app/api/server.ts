@@ -4,6 +4,7 @@ import { DomainError } from '../domain/errors';
 import claimsRoutes from './routes/claims';
 import disputesRoutes from './routes/disputes';
 import membersRoutes from './routes/members';
+import plansRoutes from './routes/plans';
 
 export function buildServer() {
   const app = Fastify({ logger: true });
@@ -21,6 +22,7 @@ export function buildServer() {
   app.register(claimsRoutes, { prefix: '/api/v1' });
   app.register(disputesRoutes, { prefix: '/api/v1' });
   app.register(membersRoutes, { prefix: '/api/v1' });
+  app.register(plansRoutes, { prefix: '/api/v1' });
 
   return app;
 }

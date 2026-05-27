@@ -20,7 +20,23 @@ export interface CoverageRule {
 export interface Policy {
   id: string;
   memberId: string;
+  planId: string | null;
   planName: string;
   effectiveDate: string;
   termDate: string | null;
+}
+
+export interface Plan {
+  id: string;
+  planCode: string;
+  name: string;
+  description: string | null;
+}
+
+export interface PlanCoverageRule {
+  id: string;
+  planId: string;
+  serviceType: ServiceType;
+  ruleType: CoverageRuleConfig['type'];
+  config: CoverageRuleConfig;
 }

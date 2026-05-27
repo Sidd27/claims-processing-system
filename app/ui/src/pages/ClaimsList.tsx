@@ -61,6 +61,7 @@ export function ClaimsList() {
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
                   <TableHead>Claim ID</TableHead>
                   <TableHead>Member</TableHead>
+                  <TableHead>Plan</TableHead>
                   <TableHead>Provider</TableHead>
                   <TableHead>Diagnosis</TableHead>
                   <TableHead>Status</TableHead>
@@ -76,6 +77,7 @@ export function ClaimsList() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-foreground">{claim.memberName}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{claim.planName}</TableCell>
                     <TableCell className="text-foreground">{claim.providerName}</TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">{claim.diagnosisCode}</TableCell>
                     <TableCell>

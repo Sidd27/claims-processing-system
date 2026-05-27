@@ -1,5 +1,23 @@
 import { pgTable, text, integer, boolean, timestamp, jsonb, uuid, date } from 'drizzle-orm/pg-core';
 
+export const plans = pgTable('plans', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  planCode: text('plan_code').notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const planCoverageRules = pgTable('plan_coverage_rules', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  planId: uuid('plan_id')
+    .notNull()
+    .references(() => plans.id),
+  serviceType: text('service_type').notNull(),
+  ruleType: text('rule_type').notNull(),
+  config: jsonb('config').notNull(),
+});
+
 export const members = pgTable('members', {
   id: uuid('id').primaryKey().defaultRandom(),
   externalMemberId: text('external_member_id').notNull().unique(),
@@ -13,6 +31,7 @@ export const policies = pgTable('policies', {
   memberId: uuid('member_id')
     .notNull()
     .references(() => members.id),
+  planId: uuid('plan_id').references(() => plans.id),
   planName: text('plan_name').notNull(),
   effectiveDate: date('effective_date').notNull(),
   termDate: date('term_date'),

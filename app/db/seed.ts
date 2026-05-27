@@ -1,8 +1,11 @@
 import 'dotenv/config';
 import { db } from './client';
-import { members, policies, coverageRules, claims, claimLineItems, adjudicationResults, disputes } from './schema';
+import { members, policies, coverageRules, claims, claimLineItems, adjudicationResults, disputes, plans, planCoverageRules } from './schema';
 import { submitClaim } from '../services/claimService';
 import { openDispute, resolveDispute } from '../services/disputeService';
+import { enrollMember } from '../services/planService';
+import { createPlan, setPlanCoverageRules, getPlanCoverageRules } from './repositories/plans';
+import { getCoverageRules } from './repositories/policies';
 
 async function clearAll() {
   await db.delete(disputes);
@@ -12,6 +15,8 @@ async function clearAll() {
   await db.delete(coverageRules);
   await db.delete(policies);
   await db.delete(members);
+  await db.delete(planCoverageRules);
+  await db.delete(plans);
 }
 
 async function seed() {
@@ -21,7 +26,7 @@ async function seed() {
   // ── Members ───────────────────────────────────────────────────────────────
 
   console.log('Creating members...');
-  const [alice, bob, carol, dave, emma, frank] = await db
+  const [alice, bob, carol, dave, emma, frank, grace] = await db
     .insert(members)
     .values([
       { externalMemberId: 'M-ALICE-001', name: 'Alice Chen', dateOfBirth: '1985-03-12' },
@@ -30,106 +35,53 @@ async function seed() {
       { externalMemberId: 'M-DAVE-004', name: 'Dave Patel', dateOfBirth: '1969-01-30' },
       { externalMemberId: 'M-EMMA-005', name: 'Emma Rodriguez', dateOfBirth: '2001-06-18' },
       { externalMemberId: 'M-FRANK-006', name: 'Frank Nguyen', dateOfBirth: '1975-09-03' },
+      { externalMemberId: 'M-GRACE-007', name: 'Grace Kim', dateOfBirth: '1990-08-22' },
     ])
     .returning();
 
-  // ── Policies ──────────────────────────────────────────────────────────────
+  // ── Plans ─────────────────────────────────────────────────────────────────
 
-  console.log('Creating policies...');
-  const [alicePolicy, bobPolicy, carolPolicy, davePolicy, emmaPolicy, frankPolicy] = await db
-    .insert(policies)
-    .values([
-      { memberId: alice.id, planName: 'Premier PPO', effectiveDate: '2026-01-01' },
-      { memberId: bob.id, planName: 'Standard HMO', effectiveDate: '2026-01-01' },
-      { memberId: carol.id, planName: 'Behavioral Plus', effectiveDate: '2026-01-01' },
-      { memberId: dave.id, planName: 'Dental Select', effectiveDate: '2026-01-01' },
-      { memberId: emma.id, planName: 'Basic Vision Plan', effectiveDate: '2026-01-01' },
-      { memberId: frank.id, planName: 'High-Touch Care', effectiveDate: '2026-01-01' },
-    ])
-    .returning();
+  console.log('Creating plans...');
+  const premierPPO = await createPlan({ planCode: 'PREMIER_PPO', name: 'Premier PPO', description: 'MEDICAL 80% coinsurance, no deductible' });
+  const standardHMO = await createPlan({ planCode: 'STANDARD_HMO', name: 'Standard HMO', description: 'MEDICAL $5,000 deductible + 80% coinsurance' });
+  const behavioralPlus = await createPlan({ planCode: 'BEHAVIORAL_PLUS', name: 'Behavioral Plus', description: 'MENTAL_HEALTH $5,000 annual limit + 80% coinsurance' });
+  const dentalSelect = await createPlan({ planCode: 'DENTAL_SELECT', name: 'Dental Select', description: 'DENTAL $300 per-claim cap + 80% coinsurance; VISION not covered' });
+  const basicVision = await createPlan({ planCode: 'BASIC_VISION', name: 'Basic Vision Plan', description: 'VISION not covered' });
+  const highTouch = await createPlan({ planCode: 'HIGH_TOUCH_CARE', name: 'High-Touch Care', description: 'MEDICAL $500 review threshold + 80% coinsurance' });
 
-  // ── Coverage Rules ────────────────────────────────────────────────────────
-
-  console.log('Creating coverage rules...');
-  await db.insert(coverageRules).values([
-    // Alice — MEDICAL: 80% coinsurance, no deductible
-    {
-      policyId: alicePolicy.id,
-      serviceType: 'MEDICAL',
-      ruleType: 'COINSURANCE',
-      config: { type: 'COINSURANCE', coveragePercent: 0.8 },
-    },
-
-    // Bob — MEDICAL: $5,000 deductible + 80% coinsurance
-    {
-      policyId: bobPolicy.id,
-      serviceType: 'MEDICAL',
-      ruleType: 'DEDUCTIBLE',
-      config: { type: 'DEDUCTIBLE', deductibleAmount: 5000 },
-    },
-    {
-      policyId: bobPolicy.id,
-      serviceType: 'MEDICAL',
-      ruleType: 'COINSURANCE',
-      config: { type: 'COINSURANCE', coveragePercent: 0.8 },
-    },
-
-    // Carol — MENTAL_HEALTH: $5,000 annual limit, 80% coinsurance
-    {
-      policyId: carolPolicy.id,
-      serviceType: 'MENTAL_HEALTH',
-      ruleType: 'ANNUAL_LIMIT',
-      config: { type: 'ANNUAL_LIMIT', limitAmount: 5000 },
-    },
-    {
-      policyId: carolPolicy.id,
-      serviceType: 'MENTAL_HEALTH',
-      ruleType: 'COINSURANCE',
-      config: { type: 'COINSURANCE', coveragePercent: 0.8 },
-    },
-
-    // Dave — DENTAL: $300 per-claim cap, 80% coinsurance; VISION: not covered
-    {
-      policyId: davePolicy.id,
-      serviceType: 'DENTAL',
-      ruleType: 'PER_CLAIM_CAP',
-      config: { type: 'PER_CLAIM_CAP', capAmount: 300 },
-    },
-    {
-      policyId: davePolicy.id,
-      serviceType: 'DENTAL',
-      ruleType: 'COINSURANCE',
-      config: { type: 'COINSURANCE', coveragePercent: 0.8 },
-    },
-    {
-      policyId: davePolicy.id,
-      serviceType: 'VISION',
-      ruleType: 'NOT_COVERED',
-      config: { type: 'NOT_COVERED' },
-    },
-
-    // Emma — VISION: not covered (demonstrates fully denied claim)
-    {
-      policyId: emmaPolicy.id,
-      serviceType: 'VISION',
-      ruleType: 'NOT_COVERED',
-      config: { type: 'NOT_COVERED' },
-    },
-
-    // Frank — MEDICAL: $500 review threshold (demonstrates under_review / manual ops decision)
-    {
-      policyId: frankPolicy.id,
-      serviceType: 'MEDICAL',
-      ruleType: 'REVIEW_THRESHOLD',
-      config: { type: 'REVIEW_THRESHOLD', thresholdAmount: 500 },
-    },
-    {
-      policyId: frankPolicy.id,
-      serviceType: 'MEDICAL',
-      ruleType: 'COINSURANCE',
-      config: { type: 'COINSURANCE', coveragePercent: 0.8 },
-    },
+  await setPlanCoverageRules(premierPPO.id, [
+    { serviceType: 'MEDICAL', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.8 } },
   ]);
+  await setPlanCoverageRules(standardHMO.id, [
+    { serviceType: 'MEDICAL', ruleType: 'DEDUCTIBLE', config: { type: 'DEDUCTIBLE', deductibleAmount: 5000 } },
+    { serviceType: 'MEDICAL', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.8 } },
+  ]);
+  await setPlanCoverageRules(behavioralPlus.id, [
+    { serviceType: 'MENTAL_HEALTH', ruleType: 'ANNUAL_LIMIT', config: { type: 'ANNUAL_LIMIT', limitAmount: 5000 } },
+    { serviceType: 'MENTAL_HEALTH', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.8 } },
+  ]);
+  await setPlanCoverageRules(dentalSelect.id, [
+    { serviceType: 'DENTAL', ruleType: 'PER_CLAIM_CAP', config: { type: 'PER_CLAIM_CAP', capAmount: 300 } },
+    { serviceType: 'DENTAL', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.8 } },
+    { serviceType: 'VISION', ruleType: 'NOT_COVERED', config: { type: 'NOT_COVERED' } },
+  ]);
+  await setPlanCoverageRules(basicVision.id, [
+    { serviceType: 'VISION', ruleType: 'NOT_COVERED', config: { type: 'NOT_COVERED' } },
+  ]);
+  await setPlanCoverageRules(highTouch.id, [
+    { serviceType: 'MEDICAL', ruleType: 'REVIEW_THRESHOLD', config: { type: 'REVIEW_THRESHOLD', thresholdAmount: 500 } },
+    { serviceType: 'MEDICAL', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.8 } },
+  ]);
+
+  // ── Enroll members into plans (snapshots rules into policies) ─────────────
+
+  console.log('Enrolling members...');
+  const alicePolicy = await enrollMember(alice.id, premierPPO.id, '2026-01-01');
+  const bobPolicy = await enrollMember(bob.id, standardHMO.id, '2026-01-01');
+  const carolPolicy = await enrollMember(carol.id, behavioralPlus.id, '2026-01-01');
+  const davePolicy = await enrollMember(dave.id, dentalSelect.id, '2026-01-01');
+  const emmaPolicy = await enrollMember(emma.id, basicVision.id, '2026-01-01');
+  const frankPolicy = await enrollMember(frank.id, highTouch.id, '2026-01-01');
 
   // ── Carol: prior claim to consume $4,500 of the $5,000 annual limit ──────
 
@@ -283,6 +235,55 @@ async function seed() {
     ],
   });
   console.log(`  Frank claim ${frankClaim.id} → ${frankClaim.status}`);
+
+  // ── Snapshot verification: plan rules change, enrolled policy is unaffected ─
+
+  console.log('\n── Snapshot verification ─────────────────────────────────────────────────');
+
+  // v1: Economy Care launches with 70% coinsurance
+  const economyCare = await createPlan({ planCode: 'ECONOMY_CARE', name: 'Economy Care', description: 'MEDICAL 70% coinsurance — v1' });
+  await setPlanCoverageRules(economyCare.id, [
+    { serviceType: 'MEDICAL', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.7 } },
+  ]);
+
+  // Grace enrolls under v1 rules (snapshot: 70% coinsurance copied into her coverageRules)
+  const gracePolicy = await enrollMember(grace.id, economyCare.id, '2026-01-01');
+  console.log(`  Grace enrolled in "${economyCare.name}" — policy ${gracePolicy.id}`);
+
+  // Plan is updated to v2: 50% coinsurance + $2,000 deductible
+  await setPlanCoverageRules(economyCare.id, [
+    { serviceType: 'MEDICAL', ruleType: 'DEDUCTIBLE', config: { type: 'DEDUCTIBLE', deductibleAmount: 2000 } },
+    { serviceType: 'MEDICAL', ruleType: 'COINSURANCE', config: { type: 'COINSURANCE', coveragePercent: 0.5 } },
+  ]);
+  console.log(`  Plan updated to v2: 50% coinsurance + $2,000 deductible`);
+
+  // Compare: plan rules vs Grace's frozen policy rules
+  const planRules = await getPlanCoverageRules(economyCare.id);
+  const policyRules = await getCoverageRules(gracePolicy.id);
+
+  console.log(`  Plan rules now   : ${planRules.map((r) => `${r.ruleType}(${JSON.stringify(r.config)})`).join(', ')}`);
+  console.log(`  Grace policy rules: ${policyRules.map((r) => `${r.ruleType}(${JSON.stringify(r.config)})`).join(', ')}`);
+
+  // Submit a claim for Grace — should adjudicate at 70% (v1 snapshot), not 50%
+  const { claim: graceClaim } = await submitClaim({
+    memberId: grace.id,
+    providerName: 'City Clinic',
+    providerNpi: '1112223334',
+    diagnosisCode: 'J06.9',
+    lineItems: [
+      {
+        serviceType: 'MEDICAL',
+        cptCode: '99213',
+        description: 'Office visit — snapshot verification',
+        serviceDate: '2026-05-27',
+        billedAmount: 1000, // expected: 70% of $1,000 = $700 (v1 rules), not 50% = $500 (v2)
+      },
+    ],
+  });
+  console.log(`  Grace claim → ${graceClaim.status}`);
+  console.log(`  Expected approved: $700.00 (70% coinsurance, v1 snapshot)`);
+
+  console.log('─────────────────────────────────────────────────────────────────────────\n');
 
   console.log('\nSeed complete.');
   process.exit(0);
